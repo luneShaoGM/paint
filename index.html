@@ -664,9 +664,6 @@
             color: #2196F3;
         }
 
-        .gesture-status-value.erasing {
-            color: #f44336;
-        }
 
         .gesture-status-value.waiting {
             color: #ff9800;
@@ -693,10 +690,6 @@
             animation: pulse 1s infinite;
         }
 
-        .gesture-indicator.erasing {
-            background: rgba(244, 67, 54, 0.9);
-            animation: pulse 1s infinite;
-        }
 
         .gesture-indicator.waiting {
             background: rgba(255, 152, 0, 0.9);
@@ -1007,7 +1000,7 @@
             <span>手部追踪:</span>
             <span id="trackingStatus">等待中</span>
         </div>
-        <div>使用食指画图，握拳擦除，张开手掌停止</div>
+        <div>使用食指画图，张开手掌停止</div>
     </div>
 
     <!-- MediaPipe 手部追踪库 -->
@@ -1226,12 +1219,8 @@
 
             const extendedFingers = fingers.filter(f => f).length;
 
-            // 检测握拳（所有手指弯曲）
-            if (extendedFingers === 0) {
-                return 'fist';
-            }
             // 检测食指伸直（只有食指伸直）
-            else if (fingers[0] && extendedFingers === 1) {
+            if (fingers[0] && extendedFingers === 1) {
                 return 'point';
             }
             // 检测手掌张开（所有手指伸直）
@@ -1257,21 +1246,12 @@
                     }
                     updateGestureStatus('画图中...', 'drawing');
                     break;
-                case 'fist':
-                    if (!isErasing) {
-                        startErasing(x, y);
-                    } else {
-                        continueErasing(x, y);
-                    }
-                    updateGestureStatus('擦除中...', 'erasing');
-                    break;
                 case 'open':
                     stopDrawing();
-                    stopErasing();
-                    updateGestureStatus('停止操作', '');
+                    updateGestureStatus('停止操作', 'waiting');
                     break;
                 default:
-                    updateGestureStatus('未知手势', '');
+                    updateGestureStatus('等待手势...', 'waiting');
                     break;
             }
         }
@@ -1279,7 +1259,6 @@
         // 开始画图
         function startDrawing(x, y) {
             isDrawing = true;
-            isErasing = false;
             lastX = x;
             lastY = y;
             resetBrushState();
@@ -1443,34 +1422,6 @@
             isDrawing = false;
         }
 
-        // 开始擦除
-        function startErasing(x, y) {
-            isErasing = true;
-            isDrawing = false;
-            lastX = x;
-            lastY = y;
-        }
-
-        // 继续擦除
-        function continueErasing(x, y) {
-            if (isErasing) {
-                ctx.beginPath();
-                ctx.moveTo(lastX, lastY);
-                ctx.lineTo(x, y);
-                ctx.strokeStyle = 'white';
-                ctx.lineWidth = currentBrushSize * 2;
-                ctx.lineCap = 'round';
-                ctx.stroke();
-                
-                lastX = x;
-                lastY = y;
-            }
-        }
-
-        // 停止擦除
-        function stopErasing() {
-            isErasing = false;
-        }
 
         // 更新手势状态显示
         function updateGestureStatus(text, className = '') {
@@ -1497,9 +1448,6 @@
                 switch (className) {
                     case 'drawing':
                         indicator.textContent = '✏️';
-                        break;
-                    case 'erasing':
-                        indicator.textContent = '🧽';
                         break;
                     case 'waiting':
                     default:
