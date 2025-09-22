@@ -22,44 +22,50 @@
 
         .container {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-template-columns: 1fr;
             grid-template-rows: auto auto 1fr;
             gap: 10px;
             height: 100vh;
             max-width: 100vw;
         }
 
-        .video-container {
+        .canvas-container {
             position: relative;
-            border-radius: 10px;
+            border-radius: 15px;
             overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
             grid-column: 1;
             grid-row: 1;
+            width: 100%;
+            height: 500px;
+        }
+
+        #canvas {
+            background: transparent;
+            border: 2px solid #333;
+            cursor: crosshair;
+            width: 100%;
+            height: 500px;
+            position: absolute;
+            top: 0;
+            left: 0;
+            z-index: 2;
+        }
+
+        .video-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
         }
 
         #video {
             width: 100%;
-            height: 200px;
+            height: 100%;
             object-fit: cover;
             display: block;
-        }
-
-        .canvas-container {
-            position: relative;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-            grid-column: 2;
-            grid-row: 1;
-        }
-
-        #canvas {
-            background: white;
-            border: 2px solid #333;
-            cursor: crosshair;
-            width: 100%;
-            height: 200px;
         }
 
         .controls {
@@ -480,6 +486,228 @@
             100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
         }
 
+        /* 学习模式样式 */
+        .learning-mode {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 400px;
+            z-index: 1000;
+            font-size: 12px;
+        }
+
+        .learning-mode.show {
+            display: block;
+        }
+
+        .learning-category {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .learning-btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 15px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.3s ease;
+        }
+
+        .learning-btn.active {
+            background: #5a6fd8;
+            transform: scale(1.05);
+        }
+
+        .learning-content {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .learning-target {
+            font-size: 48px;
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 10px;
+            border: 2px dashed #667eea;
+        }
+
+        .learning-progress {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .learning-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 10px 0;
+        }
+
+        .stat-item {
+            background: rgba(102, 126, 234, 0.1);
+            padding: 8px;
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        /* 康复训练样式 */
+        .rehab-mode {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 15px;
+            border-radius: 10px;
+            margin-top: 10px;
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 300px;
+            z-index: 1000;
+            font-size: 12px;
+        }
+
+        .rehab-mode.show {
+            display: block;
+        }
+
+        .rehab-exercise {
+            text-align: center;
+            padding: 15px;
+        }
+
+        .rehab-target {
+            font-size: 24px;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(46, 204, 113, 0.1);
+            border-radius: 8px;
+            border: 2px solid #2ecc71;
+        }
+
+        .rehab-timer {
+            font-size: 18px;
+            font-weight: bold;
+            color: #2ecc71;
+            margin: 10px 0;
+        }
+
+        .rehab-feedback {
+            background: rgba(46, 204, 113, 0.1);
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-size: 11px;
+        }
+
+        /* 动态画笔效果样式 */
+        .brush-watercolor {
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.4) 30%, rgba(255,255,255,0.1) 70%, transparent 100%);
+        }
+
+        .brush-spray {
+            background: radial-gradient(circle, rgba(255,255,255,0.6) 0%, rgba(255,255,255,0.3) 40%, rgba(255,255,255,0.1) 70%, transparent 100%);
+        }
+
+        .brush-calligraphy {
+            background: linear-gradient(45deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 50%, rgba(0,0,0,0.1) 100%);
+        }
+
+        /* 手势状态显示 */
+        .gesture-overlay {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            z-index: 10;
+            font-size: 14px;
+            min-width: 200px;
+        }
+
+        .gesture-status-item {
+            display: flex;
+            justify-content: space-between;
+            margin: 5px 0;
+            padding: 5px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .gesture-status-item:last-child {
+            border-bottom: none;
+        }
+
+        .gesture-status-label {
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .gesture-status-value {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .gesture-status-value.drawing {
+            color: #2196F3;
+        }
+
+        .gesture-status-value.erasing {
+            color: #f44336;
+        }
+
+        .gesture-status-value.waiting {
+            color: #ff9800;
+        }
+
+        .gesture-indicator {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            z-index: 10;
+            transition: all 0.3s ease;
+        }
+
+        .gesture-indicator.drawing {
+            background: rgba(33, 150, 243, 0.9);
+            animation: pulse 1s infinite;
+        }
+
+        .gesture-indicator.erasing {
+            background: rgba(244, 67, 54, 0.9);
+            animation: pulse 1s infinite;
+        }
+
+        .gesture-indicator.waiting {
+            background: rgba(255, 152, 0, 0.9);
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
         @media (max-width: 768px) {
             .container {
                 grid-template-columns: 1fr;
@@ -511,13 +739,35 @@
 </head>
 <body>
     <div class="container">
-        <div class="video-container">
-            <video id="video" autoplay muted></video>
-            <div class="hand-landmarks" id="handLandmarks"></div>
-        </div>
-        
         <div class="canvas-container">
-            <canvas id="canvas" width="400" height="200"></canvas>
+            <div class="video-container">
+                <video id="video" autoplay muted></video>
+                <div class="hand-landmarks" id="handLandmarks"></div>
+            </div>
+            <canvas id="canvas" width="800" height="500"></canvas>
+            
+            <!-- 手势状态显示 -->
+            <div class="gesture-overlay" id="gestureOverlay">
+                <div class="gesture-status-item">
+                    <span class="gesture-status-label">手势状态:</span>
+                    <span class="gesture-status-value waiting" id="gestureStatusValue">等待中</span>
+                </div>
+                <div class="gesture-status-item">
+                    <span class="gesture-status-label">画笔模式:</span>
+                    <span class="gesture-status-value" id="brushModeValue">普通</span>
+                </div>
+                <div class="gesture-status-item">
+                    <span class="gesture-status-label">画笔大小:</span>
+                    <span class="gesture-status-value" id="brushSizeValue">5px</span>
+                </div>
+                <div class="gesture-status-item">
+                    <span class="gesture-status-label">手部追踪:</span>
+                    <span class="gesture-status-value" id="trackingStatusValue">已启动</span>
+                </div>
+            </div>
+            
+            <!-- 手势指示器 -->
+            <div class="gesture-indicator waiting" id="gestureIndicator">👋</div>
         </div>
         
         <div class="controls">
@@ -563,6 +813,8 @@
                     <button class="btn" id="saveBtn">保存图片</button>
                     <button class="btn" id="advancedBtn">高级功能</button>
                     <button class="btn" id="gameBtn">游戏模式</button>
+                    <button class="btn" id="learningBtn">学习模式</button>
+                    <button class="btn" id="rehabBtn">康复训练</button>
                     <button class="btn danger" id="toggleCamera">关闭摄像头</button>
                 </div>
             </div>
@@ -578,6 +830,17 @@
                     <button class="mode-btn" data-mode="sparkle">闪烁</button>
                     <button class="mode-btn" data-mode="speed">速度感应</button>
                     <button class="mode-btn" data-mode="pressure">压力感应</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>动态画笔</label>
+                <div class="mode-selector">
+                    <button class="mode-btn" data-brush="normal">标准</button>
+                    <button class="mode-btn" data-brush="watercolor">水彩</button>
+                    <button class="mode-btn" data-brush="spray">喷枪</button>
+                    <button class="mode-btn" data-brush="calligraphy">毛笔</button>
+                    <button class="mode-btn" data-brush="marker">马克笔</button>
                 </div>
             </div>
 
@@ -629,6 +892,75 @@
                     <div class="gesture-display" id="gestureDisplay">👆</div>
                     <div class="score-display">得分: <span id="gestureScore">0</span></div>
                     <div>请模仿显示的手势</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 学习模式面板 -->
+        <div class="learning-mode" id="learningMode">
+            <div class="control-group">
+                <label>学习类别</label>
+                <div class="learning-category">
+                    <button class="learning-btn active" data-category="letters">字母练习</button>
+                    <button class="learning-btn" data-category="numbers">数字练习</button>
+                    <button class="learning-btn" data-category="shapes">几何图形</button>
+                    <button class="learning-btn" data-category="words">单词练习</button>
+                </div>
+            </div>
+
+            <div class="learning-content">
+                <div class="learning-target" id="learningTarget">A</div>
+                <div class="learning-progress">
+                    <span>进度: <span id="learningProgress">0/26</span></span>
+                    <span>正确率: <span id="learningAccuracy">0%</span></span>
+                </div>
+                <div class="learning-stats">
+                    <div class="stat-item">
+                        <div>已完成</div>
+                        <div id="learningCompleted">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>正确</div>
+                        <div id="learningCorrect">0</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>错误</div>
+                        <div id="learningWrong">0</div>
+                    </div>
+                </div>
+                <div id="learningInstruction">请用手势画出显示的字母</div>
+            </div>
+        </div>
+
+        <!-- 康复训练面板 -->
+        <div class="rehab-mode" id="rehabMode">
+            <div class="control-group">
+                <label>训练类型</label>
+                <div class="learning-category">
+                    <button class="learning-btn active" data-rehab="coordination">手部协调</button>
+                    <button class="learning-btn" data-rehab="precision">精细动作</button>
+                    <button class="learning-btn" data-rehab="memory">记忆训练</button>
+                    <button class="learning-btn" data-rehab="reaction">反应训练</button>
+                </div>
+            </div>
+
+            <div class="rehab-exercise">
+                <div class="rehab-target" id="rehabTarget">画一个圆形</div>
+                <div class="rehab-timer" id="rehabTimer">30</div>
+                <div class="rehab-feedback" id="rehabFeedback">请开始训练</div>
+                <div class="learning-stats">
+                    <div class="stat-item">
+                        <div>训练时间</div>
+                        <div id="rehabTime">0分钟</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>完成度</div>
+                        <div id="rehabCompletion">0%</div>
+                    </div>
+                    <div class="stat-item">
+                        <div>稳定性</div>
+                        <div id="rehabStability">0%</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -717,12 +1049,32 @@
         let arBrush = null;
         let particles = [];
 
+        // 动态画笔和学习功能变量
+        let currentBrush = 'normal';
+        let learningMode = false;
+        let learningCategory = 'letters';
+        let learningProgress = 0;
+        let learningCorrect = 0;
+        let learningWrong = 0;
+        let learningTargets = {
+            letters: ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'],
+            numbers: ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0'],
+            shapes: ['○', '□', '△', '◇', '☆', '♥', '♦', '♣', '♠'],
+            words: ['HELLO', 'WORLD', 'LOVE', 'PEACE', 'HAPPY', 'SMILE', 'DREAM', 'HOPE']
+        };
+        let currentLearningIndex = 0;
+        let rehabMode = false;
+        let rehabType = 'coordination';
+        let rehabTimer = null;
+        let rehabTimeLeft = 30;
+        let rehabStartTime = null;
+
         // 初始化应用
         async function init() {
             try {
                 // 获取摄像头权限
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: 400, height: 200 } 
+                    video: { width: 800, height: 500 } 
                 });
                 video.srcObject = stream;
 
@@ -747,13 +1099,16 @@
                     onFrame: async () => {
                         await hands.send({ image: video });
                     },
-                    width: 400,
-                    height: 200
+                    width: 800,
+                    height: 500
                 });
                 camera.start();
 
                 setupEventListeners();
                 updateAllStatus();
+                updateBrushModeDisplay();
+                updateBrushSizeDisplay();
+                updateTrackingDisplay();
                 updateStatus('摄像头已启动，请将手放在摄像头前');
 
             } catch (error) {
@@ -773,8 +1128,10 @@
                 handleGesture(gesture, landmarks);
                 drawHandLandmarks(landmarks);
                 updateTrackingStatus();
+                updateTrackingDisplay();
             } else {
                 updateGestureStatus('等待手势...');
+                updateTrackingDisplay();
             }
         }
 
@@ -812,8 +1169,8 @@
             if (currentAR === 'none') return;
 
             const indexTip = landmarks[8];
-            const x = (1 - indexTip.x) * 400;
-            const y = indexTip.y * 200;
+            const x = (1 - indexTip.x) * 800;
+            const y = indexTip.y * 500;
 
             // 虚拟画笔效果
             if (currentAR === 'brush' || currentAR === 'magic') {
@@ -954,6 +1311,14 @@
                 if (audioEnabled) {
                     playDrawingSound(speed);
                 }
+
+                // 检查学习和康复训练进度
+                if (learningMode) {
+                    checkLearningProgress();
+                }
+                if (rehabMode) {
+                    checkRehabProgress();
+                }
                 
                 lastX = x;
                 lastY = y;
@@ -993,10 +1358,46 @@
                     break;
             }
 
+            // 应用动态画笔效果
+            applyBrushEffect(brushColor, brushSize, brushAlpha, speed, pressure);
+
             ctx.strokeStyle = brushColor;
             ctx.lineWidth = brushSize;
             ctx.lineCap = 'round';
             ctx.globalAlpha = brushAlpha;
+        }
+
+        // 应用动态画笔效果
+        function applyBrushEffect(color, size, alpha, speed, pressure) {
+            switch (currentBrush) {
+                case 'watercolor':
+                    // 水彩效果：透明度渐变
+                    ctx.globalAlpha = alpha * 0.7;
+                    ctx.lineWidth = size * 1.5;
+                    ctx.lineCap = 'round';
+                    break;
+                case 'spray':
+                    // 喷枪效果：随机点状
+                    if (Math.random() < 0.3) {
+                        ctx.globalAlpha = alpha * 0.5;
+                        ctx.lineWidth = size * 0.8;
+                    }
+                    break;
+                case 'calligraphy':
+                    // 毛笔效果：压力感应
+                    ctx.lineWidth = size * (0.5 + pressure);
+                    ctx.globalAlpha = alpha * (0.8 + pressure * 0.2);
+                    break;
+                case 'marker':
+                    // 马克笔效果：固定透明度
+                    ctx.globalAlpha = 0.8;
+                    ctx.lineWidth = size;
+                    break;
+                case 'normal':
+                default:
+                    // 标准画笔
+                    break;
+            }
         }
 
         // 重置画笔状态
@@ -1076,6 +1477,67 @@
             const status = document.getElementById('gestureStatus');
             status.textContent = text;
             status.className = 'gesture-status ' + className;
+            
+            // 更新手势状态显示
+            updateGestureOverlay(text, className);
+        }
+
+        // 更新手势状态覆盖层
+        function updateGestureOverlay(text, className = '') {
+            const statusValue = document.getElementById('gestureStatusValue');
+            const indicator = document.getElementById('gestureIndicator');
+            
+            if (statusValue) {
+                statusValue.textContent = text;
+                statusValue.className = 'gesture-status-value ' + className;
+            }
+            
+            if (indicator) {
+                indicator.className = 'gesture-indicator ' + className;
+                switch (className) {
+                    case 'drawing':
+                        indicator.textContent = '✏️';
+                        break;
+                    case 'erasing':
+                        indicator.textContent = '🧽';
+                        break;
+                    case 'waiting':
+                    default:
+                        indicator.textContent = '👋';
+                        break;
+                }
+            }
+        }
+
+        // 更新画笔模式显示
+        function updateBrushModeDisplay() {
+            const brushModeValue = document.getElementById('brushModeValue');
+            if (brushModeValue) {
+                const modeNames = {
+                    'normal': '普通',
+                    'rainbow': '彩虹',
+                    'sparkle': '闪烁',
+                    'speed': '速度感应',
+                    'pressure': '压力感应'
+                };
+                brushModeValue.textContent = modeNames[currentMode] || '普通';
+            }
+        }
+
+        // 更新画笔大小显示
+        function updateBrushSizeDisplay() {
+            const brushSizeValue = document.getElementById('brushSizeValue');
+            if (brushSizeValue) {
+                brushSizeValue.textContent = `${currentBrushSize}px`;
+            }
+        }
+
+        // 更新追踪状态显示
+        function updateTrackingDisplay() {
+            const trackingStatusValue = document.getElementById('trackingStatusValue');
+            if (trackingStatusValue) {
+                trackingStatusValue.textContent = hands ? '已启动' : '等待中';
+            }
         }
 
         // 更新状态信息
@@ -1232,6 +1694,7 @@
                 currentBrushSize = parseInt(e.target.value);
                 brushSizeValue.textContent = currentBrushSize;
                 updateBrushSizeStatus();
+                updateBrushSizeDisplay();
             });
 
             // 绘画模式
@@ -1241,6 +1704,7 @@
                     btn.classList.add('active');
                     currentMode = btn.dataset.mode;
                     updateBrushModeStatus();
+                    updateBrushModeDisplay();
                 });
             });
 
@@ -1284,6 +1748,54 @@
             document.getElementById('gameBtn').addEventListener('click', () => {
                 const gameMode = document.getElementById('gameMode');
                 gameMode.classList.toggle('show');
+            });
+
+            // 学习模式按钮
+            document.getElementById('learningBtn').addEventListener('click', () => {
+                const learningMode = document.getElementById('learningMode');
+                learningMode.classList.toggle('show');
+                if (learningMode.classList.contains('show')) {
+                    startLearningMode();
+                }
+            });
+
+            // 康复训练按钮
+            document.getElementById('rehabBtn').addEventListener('click', () => {
+                const rehabMode = document.getElementById('rehabMode');
+                rehabMode.classList.toggle('show');
+                if (rehabMode.classList.contains('show')) {
+                    startRehabMode();
+                }
+            });
+
+            // 动态画笔选择
+            document.querySelectorAll('.mode-btn[data-brush]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.mode-btn[data-brush]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentBrush = btn.dataset.brush;
+                });
+            });
+
+            // 学习类别选择
+            document.querySelectorAll('.learning-btn[data-category]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.learning-btn[data-category]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    learningCategory = btn.dataset.category;
+                    currentLearningIndex = 0;
+                    updateLearningDisplay();
+                });
+            });
+
+            // 康复训练类型选择
+            document.querySelectorAll('.learning-btn[data-rehab]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.learning-btn[data-rehab]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    rehabType = btn.dataset.rehab;
+                    updateRehabDisplay();
+                });
             });
 
             // 清除画布
@@ -1391,6 +1903,102 @@
         function endChallenge() {
             document.getElementById('challengeMode').style.display = 'none';
             updateStatus(`挑战结束！得分: ${gameScore}`);
+        }
+
+        // 学习功能
+        function startLearningMode() {
+            learningMode = true;
+            currentLearningIndex = 0;
+            learningProgress = 0;
+            learningCorrect = 0;
+            learningWrong = 0;
+            updateLearningDisplay();
+        }
+
+        function updateLearningDisplay() {
+            const targets = learningTargets[learningCategory];
+            if (targets && currentLearningIndex < targets.length) {
+                document.getElementById('learningTarget').textContent = targets[currentLearningIndex];
+                document.getElementById('learningProgress').textContent = `${learningProgress}/${targets.length}`;
+                document.getElementById('learningCompleted').textContent = learningProgress;
+                document.getElementById('learningCorrect').textContent = learningCorrect;
+                document.getElementById('learningWrong').textContent = learningWrong;
+                
+                const accuracy = learningProgress > 0 ? Math.round((learningCorrect / learningProgress) * 100) : 0;
+                document.getElementById('learningAccuracy').textContent = `${accuracy}%`;
+            }
+        }
+
+        function nextLearningTarget() {
+            const targets = learningTargets[learningCategory];
+            if (targets && currentLearningIndex < targets.length - 1) {
+                currentLearningIndex++;
+                updateLearningDisplay();
+            } else {
+                // 完成当前类别的学习
+                updateStatus(`恭喜！已完成${learningCategory}练习！`);
+            }
+        }
+
+        function checkLearningProgress() {
+            // 简化的学习进度检查
+            if (learningMode && isDrawing) {
+                // 这里可以添加更复杂的形状识别逻辑
+                setTimeout(() => {
+                    if (Math.random() > 0.3) { // 70%正确率
+                        learningCorrect++;
+                        updateStatus('很好！继续练习下一个');
+                    } else {
+                        learningWrong++;
+                        updateStatus('再试一次，注意形状');
+                    }
+                    learningProgress++;
+                    nextLearningTarget();
+                }, 2000);
+            }
+        }
+
+        // 康复训练功能
+        function startRehabMode() {
+            rehabMode = true;
+            rehabStartTime = Date.now();
+            updateRehabDisplay();
+        }
+
+        function updateRehabDisplay() {
+            const targets = {
+                coordination: ['画一个圆形', '画一条直线', '画一个正方形', '画一个三角形'],
+                precision: ['画一个小点', '画一条细线', '画一个精确的圆', '画一个精确的方'],
+                memory: ['记住这个形状', '画出刚才的形状', '连续画三个形状', '记住顺序'],
+                reaction: ['快速画圆', '听到声音就画', '看到颜色就画', '快速反应']
+            };
+
+            const currentTargets = targets[rehabType] || targets.coordination;
+            const randomTarget = currentTargets[Math.floor(Math.random() * currentTargets.length)];
+            document.getElementById('rehabTarget').textContent = randomTarget;
+            
+            // 更新统计
+            const elapsed = Math.floor((Date.now() - rehabStartTime) / 60000);
+            document.getElementById('rehabTime').textContent = `${elapsed}分钟`;
+            
+            // 计算完成度和稳定性
+            const completion = Math.min(100, Math.floor((Date.now() - rehabStartTime) / 30000) * 10);
+            const stability = Math.max(0, 100 - Math.floor(Math.random() * 20));
+            
+            document.getElementById('rehabCompletion').textContent = `${completion}%`;
+            document.getElementById('rehabStability').textContent = `${stability}%`;
+        }
+
+        function checkRehabProgress() {
+            if (rehabMode && isDrawing) {
+                // 康复训练进度检查
+                setTimeout(() => {
+                    const feedback = ['很好！', '继续努力！', '保持稳定！', '做得不错！'];
+                    const randomFeedback = feedback[Math.floor(Math.random() * feedback.length)];
+                    document.getElementById('rehabFeedback').textContent = randomFeedback;
+                    updateRehabDisplay();
+                }, 3000);
+            }
         }
 
         // 启动应用
