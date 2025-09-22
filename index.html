@@ -14,80 +14,97 @@
         body {
             font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
+            height: 100vh;
+            margin: 0;
+            padding: 10px;
+            overflow: hidden;
         }
 
         .container {
-            display: flex;
-            gap: 20px;
-            max-width: 1400px;
-            width: 100%;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            grid-template-rows: auto auto 1fr;
+            gap: 10px;
+            height: 100vh;
+            max-width: 100vw;
         }
 
         .video-container {
             position: relative;
-            border-radius: 15px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            grid-column: 1;
+            grid-row: 1;
         }
 
         #video {
-            width: 640px;
-            height: 480px;
+            width: 100%;
+            height: 200px;
             object-fit: cover;
             display: block;
         }
 
         .canvas-container {
             position: relative;
-            border-radius: 15px;
+            border-radius: 10px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+            grid-column: 2;
+            grid-row: 1;
         }
 
         #canvas {
             background: white;
             border: 2px solid #333;
             cursor: crosshair;
+            width: 100%;
+            height: 200px;
         }
 
         .controls {
             background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 15px;
+            padding: 10px;
+            border-radius: 10px;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 15px;
+            grid-column: 1 / -1;
+            grid-row: 2;
+            align-items: start;
+        }
+
+        .left-controls {
             display: flex;
             flex-direction: column;
-            gap: 15px;
-            min-width: 200px;
+            gap: 10px;
         }
 
         .control-group {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 5px;
+            font-size: 12px;
         }
 
         .control-group label {
             font-weight: bold;
             color: #333;
+            font-size: 11px;
         }
 
         .color-palette {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 5px;
+            gap: 3px;
         }
 
         .color-btn {
-            width: 40px;
-            height: 40px;
+            width: 25px;
+            height: 25px;
             border: 2px solid #ddd;
-            border-radius: 8px;
+            border-radius: 4px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
@@ -105,28 +122,30 @@
         .brush-size {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 5px;
         }
 
         .brush-size input {
             flex: 1;
+            height: 20px;
         }
 
         .action-buttons {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 5px;
         }
 
         .btn {
-            padding: 12px 20px;
+            padding: 6px 10px;
             border: none;
-            border-radius: 8px;
+            border-radius: 4px;
             cursor: pointer;
             font-weight: bold;
             transition: all 0.3s ease;
             background: #667eea;
             color: white;
+            font-size: 10px;
         }
 
         .btn:hover {
@@ -144,11 +163,13 @@
 
         .status {
             background: rgba(255, 255, 255, 0.9);
-            padding: 15px;
-            border-radius: 10px;
-            margin-top: 20px;
+            padding: 8px;
+            border-radius: 8px;
             text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            grid-column: 1 / -1;
+            grid-row: 3;
+            font-size: 12px;
         }
 
         .gesture-info {
@@ -174,16 +195,316 @@
             color: white;
         }
 
-        @media (max-width: 1200px) {
+        /* 手部关键点显示样式 */
+        .hand-landmarks {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .landmark-point {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #ff0000;
+            border-radius: 50%;
+            border: 2px solid #fff;
+            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            transform: translate(-50%, -50%);
+        }
+
+        .landmark-point.index-tip {
+            background: #00ff00;
+            width: 12px;
+            height: 12px;
+        }
+
+        .landmark-point.thumb-tip {
+            background: #0000ff;
+        }
+
+        .landmark-point.wrist {
+            background: #ff00ff;
+            width: 10px;
+            height: 10px;
+        }
+
+        /* AR效果和虚拟画笔样式 */
+        .ar-brush {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,255,255,0.2) 70%, transparent 100%);
+            border: 2px solid rgba(255,255,255,0.9);
+            box-shadow: 0 0 20px rgba(255,255,255,0.6), 0 0 40px rgba(255,255,255,0.3);
+            pointer-events: none;
+            transition: all 0.1s ease;
+        }
+
+        .ar-particles {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #fff;
+            border-radius: 50%;
+            pointer-events: none;
+            animation: particleFloat 2s ease-out forwards;
+        }
+
+        @keyframes particleFloat {
+            0% {
+                opacity: 1;
+                transform: scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: scale(0) translateY(-50px);
+            }
+        }
+
+        /* 主题模式样式 */
+        .theme-space {
+            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
+        }
+
+        .theme-ocean {
+            background: linear-gradient(135deg, #0077be 0%, #00a8cc 50%, #40e0d0 100%);
+        }
+
+        .theme-forest {
+            background: linear-gradient(135deg, #2d5016 0%, #4a7c59 50%, #8fbc8f 100%);
+        }
+
+        .theme-city {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #7f8c8d 100%);
+        }
+
+        .theme-selector {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .theme-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            border: 3px solid #fff;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .theme-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .theme-btn.active {
+            border-color: #ffd700;
+            box-shadow: 0 0 15px rgba(255,215,0,0.5);
+        }
+
+        /* 高级操作面板 */
+        .advanced-controls {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            display: none;
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            width: 300px;
+            z-index: 1000;
+            font-size: 11px;
+        }
+
+        .advanced-controls.show {
+            display: block;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 5px;
+            margin-bottom: 5px;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 4px 8px;
+            border: none;
+            border-radius: 10px;
+            background: #667eea;
+            color: white;
+            cursor: pointer;
+            font-size: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .mode-btn.active {
+            background: #5a6fd8;
+            transform: scale(1.05);
+        }
+
+        /* 音效控制 */
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .audio-toggle {
+            width: 50px;
+            height: 25px;
+            background: #ddd;
+            border-radius: 25px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .audio-toggle.active {
+            background: #4CAF50;
+        }
+
+        .audio-toggle::after {
+            content: '';
+            position: absolute;
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            top: 2px;
+            left: 2px;
+            transition: all 0.3s ease;
+        }
+
+        .audio-toggle.active::after {
+            transform: translateX(25px);
+        }
+
+        /* 游戏模式样式 */
+        .game-mode {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 8px;
+            border-radius: 8px;
+            display: none;
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            width: 300px;
+            z-index: 1000;
+            font-size: 11px;
+        }
+
+        .game-mode.show {
+            display: block;
+        }
+
+        .challenge-timer {
+            font-size: 16px;
+            font-weight: bold;
+            color: #e74c3c;
+            text-align: center;
+            margin-bottom: 5px;
+        }
+
+        .challenge-progress {
+            width: 100%;
+            height: 6px;
+            background: #ddd;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 5px;
+        }
+
+        .challenge-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50, #8BC34A);
+            transition: width 0.3s ease;
+        }
+
+        .gesture-game {
+            text-align: center;
+        }
+
+        .gesture-display {
+            font-size: 24px;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(102, 126, 234, 0.1);
+            border-radius: 5px;
+        }
+
+        .score-display {
+            font-size: 12px;
+            font-weight: bold;
+            color: #333;
+            margin: 5px 0;
+        }
+
+        /* 特效样式 */
+        .effect-rainbow {
+            background: linear-gradient(45deg, #ff0000, #ff7f00, #ffff00, #00ff00, #0000ff, #4b0082, #9400d3);
+            background-size: 400% 400%;
+            animation: rainbow 2s ease infinite;
+        }
+
+        @keyframes rainbow {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .effect-sparkle {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .effect-sparkle::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: linear-gradient(45deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: sparkle 1s linear infinite;
+        }
+
+        @keyframes sparkle {
+            0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+            100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+        }
+
+        @media (max-width: 768px) {
             .container {
-                flex-direction: column;
-                align-items: center;
+                grid-template-columns: 1fr;
+                grid-template-rows: auto auto auto 1fr;
+            }
+            
+            .video-container {
+                grid-column: 1;
+                grid-row: 1;
+            }
+            
+            .canvas-container {
+                grid-column: 1;
+                grid-row: 2;
             }
             
             .controls {
-                flex-direction: row;
-                flex-wrap: wrap;
-                justify-content: center;
+                grid-column: 1;
+                grid-row: 3;
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .status {
+                grid-column: 1;
+                grid-row: 4;
             }
         }
     </style>
@@ -192,32 +513,46 @@
     <div class="container">
         <div class="video-container">
             <video id="video" autoplay muted></video>
+            <div class="hand-landmarks" id="handLandmarks"></div>
         </div>
         
         <div class="canvas-container">
-            <canvas id="canvas" width="640" height="480"></canvas>
+            <canvas id="canvas" width="400" height="200"></canvas>
         </div>
         
         <div class="controls">
-            <div class="control-group">
-                <label>画笔颜色</label>
-                <div class="color-palette">
-                    <div class="color-btn active" data-color="#000000" style="background: #000000;"></div>
-                    <div class="color-btn" data-color="#ff0000" style="background: #ff0000;"></div>
-                    <div class="color-btn" data-color="#00ff00" style="background: #00ff00;"></div>
-                    <div class="color-btn" data-color="#0000ff" style="background: #0000ff;"></div>
-                    <div class="color-btn" data-color="#ffff00" style="background: #ffff00;"></div>
-                    <div class="color-btn" data-color="#ff00ff" style="background: #ff00ff;"></div>
-                    <div class="color-btn" data-color="#00ffff" style="background: #00ffff;"></div>
-                    <div class="color-btn" data-color="#ffa500" style="background: #ffa500;"></div>
+            <div class="left-controls">
+                <div class="control-group">
+                    <label>主题模式</label>
+                    <div class="theme-selector">
+                        <div class="theme-btn active" data-theme="default" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
+                        <div class="theme-btn" data-theme="space" style="background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);"></div>
+                        <div class="theme-btn" data-theme="ocean" style="background: linear-gradient(135deg, #0077be 0%, #00a8cc 50%, #40e0d0 100%);"></div>
+                        <div class="theme-btn" data-theme="forest" style="background: linear-gradient(135deg, #2d5016 0%, #4a7c59 50%, #8fbc8f 100%);"></div>
+                        <div class="theme-btn" data-theme="city" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #7f8c8d 100%);"></div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="control-group">
-                <label>画笔大小</label>
-                <div class="brush-size">
-                    <input type="range" id="brushSize" min="1" max="20" value="5">
-                    <span id="brushSizeValue">5</span>
+
+                <div class="control-group">
+                    <label>画笔大小</label>
+                    <div class="brush-size">
+                        <input type="range" id="brushSize" min="1" max="20" value="5">
+                        <span id="brushSizeValue">5</span>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>画笔颜色</label>
+                    <div class="color-palette">
+                        <div class="color-btn active" data-color="#000000" style="background: #000000;"></div>
+                        <div class="color-btn" data-color="#ff0000" style="background: #ff0000;"></div>
+                        <div class="color-btn" data-color="#00ff00" style="background: #00ff00;"></div>
+                        <div class="color-btn" data-color="#0000ff" style="background: #0000ff;"></div>
+                        <div class="color-btn" data-color="#ffff00" style="background: #ffff00;"></div>
+                        <div class="color-btn" data-color="#ff00ff" style="background: #ff00ff;"></div>
+                        <div class="color-btn" data-color="#00ffff" style="background: #00ffff;"></div>
+                        <div class="color-btn" data-color="#ffa500" style="background: #ffa500;"></div>
+                    </div>
                 </div>
             </div>
             
@@ -226,7 +561,74 @@
                 <div class="action-buttons">
                     <button class="btn" id="clearBtn">清除画布</button>
                     <button class="btn" id="saveBtn">保存图片</button>
+                    <button class="btn" id="advancedBtn">高级功能</button>
+                    <button class="btn" id="gameBtn">游戏模式</button>
                     <button class="btn danger" id="toggleCamera">关闭摄像头</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 高级控制面板 -->
+        <div class="advanced-controls" id="advancedControls">
+            <div class="control-group">
+                <label>绘画模式</label>
+                <div class="mode-selector">
+                    <button class="mode-btn active" data-mode="normal">普通</button>
+                    <button class="mode-btn" data-mode="rainbow">彩虹</button>
+                    <button class="mode-btn" data-mode="sparkle">闪烁</button>
+                    <button class="mode-btn" data-mode="speed">速度感应</button>
+                    <button class="mode-btn" data-mode="pressure">压力感应</button>
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>音效设置</label>
+                <div class="audio-controls">
+                    <span>音效</span>
+                    <div class="audio-toggle" id="audioToggle"></div>
+                    <span>音量</span>
+                    <input type="range" id="volumeSlider" min="0" max="100" value="50">
+                </div>
+            </div>
+
+            <div class="control-group">
+                <label>AR效果</label>
+                <div class="mode-selector">
+                    <button class="mode-btn" data-ar="none">关闭</button>
+                    <button class="mode-btn active" data-ar="brush">虚拟画笔</button>
+                    <button class="mode-btn" data-ar="particles">粒子效果</button>
+                    <button class="mode-btn" data-ar="magic">魔法效果</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 游戏模式面板 -->
+        <div class="game-mode" id="gameMode">
+            <div class="control-group">
+                <label>游戏选择</label>
+                <div class="mode-selector">
+                    <button class="mode-btn" data-game="challenge">绘画挑战</button>
+                    <button class="mode-btn" data-game="gesture">手势游戏</button>
+                    <button class="mode-btn" data-game="memory">记忆绘画</button>
+                    <button class="mode-btn" data-game="speed">速度挑战</button>
+                </div>
+            </div>
+
+            <!-- 绘画挑战模式 -->
+            <div id="challengeMode" style="display: none;">
+                <div class="challenge-timer" id="challengeTimer">30</div>
+                <div class="challenge-progress">
+                    <div class="challenge-progress-bar" id="challengeProgress"></div>
+                </div>
+                <div id="challengeInstruction">请画一个圆形</div>
+            </div>
+
+            <!-- 手势游戏模式 -->
+            <div id="gestureMode" style="display: none;">
+                <div class="gesture-game">
+                    <div class="gesture-display" id="gestureDisplay">👆</div>
+                    <div class="score-display">得分: <span id="gestureScore">0</span></div>
+                    <div>请模仿显示的手势</div>
                 </div>
             </div>
         </div>
@@ -236,6 +638,42 @@
         <div class="gesture-info">
             <span>手势状态:</span>
             <span class="gesture-status" id="gestureStatus">等待手势...</span>
+        </div>
+        <div class="gesture-info">
+            <span>画笔模式:</span>
+            <span id="brushModeStatus">普通模式</span>
+        </div>
+        <div class="gesture-info">
+            <span>AR效果:</span>
+            <span id="arStatus">虚拟画笔</span>
+        </div>
+        <div class="gesture-info">
+            <span>音效:</span>
+            <span id="audioStatus">关闭</span>
+        </div>
+        <div class="gesture-info">
+            <span>主题:</span>
+            <span id="themeStatus">默认主题</span>
+        </div>
+        <div class="gesture-info">
+            <span>画笔大小:</span>
+            <span id="brushSizeStatus">5px</span>
+        </div>
+        <div class="gesture-info">
+            <span>画笔颜色:</span>
+            <span id="brushColorStatus">#000000</span>
+        </div>
+        <div class="gesture-info">
+            <span>游戏模式:</span>
+            <span id="gameStatus">未开启</span>
+        </div>
+        <div class="gesture-info">
+            <span>摄像头:</span>
+            <span id="cameraStatus">已启动</span>
+        </div>
+        <div class="gesture-info">
+            <span>手部追踪:</span>
+            <span id="trackingStatus">等待中</span>
         </div>
         <div>使用食指画图，握拳擦除，张开手掌停止</div>
     </div>
@@ -259,13 +697,32 @@
         let currentBrushSize = 5;
         let lastX = 0;
         let lastY = 0;
+        let handLandmarks = document.getElementById('handLandmarks');
+
+        // 新增功能变量
+        let currentTheme = 'default';
+        let currentMode = 'normal';
+        let currentAR = 'brush';
+        let audioEnabled = false;
+        let volume = 0.5;
+        let currentGame = null;
+        let gameScore = 0;
+        let challengeTimer = null;
+        let challengeTimeLeft = 30;
+        let gestureSequence = ['👆', '✊', '✋', '🤞', '👍'];
+        let currentGestureIndex = 0;
+        let lastGestureTime = 0;
+        let speedHistory = [];
+        let pressureHistory = [];
+        let arBrush = null;
+        let particles = [];
 
         // 初始化应用
         async function init() {
             try {
                 // 获取摄像头权限
                 const stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: { width: 640, height: 480 } 
+                    video: { width: 400, height: 200 } 
                 });
                 video.srcObject = stream;
 
@@ -290,12 +747,13 @@
                     onFrame: async () => {
                         await hands.send({ image: video });
                     },
-                    width: 640,
-                    height: 480
+                    width: 400,
+                    height: 200
                 });
                 camera.start();
 
                 setupEventListeners();
+                updateAllStatus();
                 updateStatus('摄像头已启动，请将手放在摄像头前');
 
             } catch (error) {
@@ -306,13 +764,90 @@
 
         // 处理手部追踪结果
         function onResults(results) {
+            // 清除之前的关键点
+            handLandmarks.innerHTML = '';
+            
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
                 const landmarks = results.multiHandLandmarks[0];
                 const gesture = detectGesture(landmarks);
                 handleGesture(gesture, landmarks);
+                drawHandLandmarks(landmarks);
+                updateTrackingStatus();
             } else {
                 updateGestureStatus('等待手势...');
             }
+        }
+
+        // 绘制手部关键点
+        function drawHandLandmarks(landmarks) {
+            landmarks.forEach((landmark, index) => {
+                const point = document.createElement('div');
+                point.className = 'landmark-point';
+                
+                // 特殊标记重要关键点
+                if (index === 8) { // 食指尖
+                    point.classList.add('index-tip');
+                } else if (index === 4) { // 拇指尖
+                    point.classList.add('thumb-tip');
+                } else if (index === 0) { // 手腕
+                    point.classList.add('wrist');
+                }
+                
+                // 计算在视频中的位置
+                const x = landmark.x * 100;
+                const y = landmark.y * 100;
+                
+                point.style.left = x + '%';
+                point.style.top = y + '%';
+                
+                handLandmarks.appendChild(point);
+            });
+
+            // 更新AR效果
+            updateAREffects(landmarks);
+        }
+
+        // 更新AR效果
+        function updateAREffects(landmarks) {
+            if (currentAR === 'none') return;
+
+            const indexTip = landmarks[8];
+            const x = (1 - indexTip.x) * 400;
+            const y = indexTip.y * 200;
+
+            // 虚拟画笔效果
+            if (currentAR === 'brush' || currentAR === 'magic') {
+                if (!arBrush) {
+                    arBrush = document.createElement('div');
+                    arBrush.className = 'ar-brush';
+                    handLandmarks.appendChild(arBrush);
+                }
+                arBrush.style.left = x + 'px';
+                arBrush.style.top = y + 'px';
+            }
+
+            // 粒子效果
+            if (currentAR === 'particles' || currentAR === 'magic') {
+                if (Math.random() < 0.3) {
+                    createParticle(x, y);
+                }
+            }
+        }
+
+        // 创建粒子效果
+        function createParticle(x, y) {
+            const particle = document.createElement('div');
+            particle.className = 'ar-particles';
+            particle.style.left = x + 'px';
+            particle.style.top = y + 'px';
+            particle.style.background = currentColor;
+            handLandmarks.appendChild(particle);
+
+            setTimeout(() => {
+                if (particle.parentNode) {
+                    particle.parentNode.removeChild(particle);
+                }
+            }, 2000);
         }
 
         // 检测手势
@@ -390,22 +925,116 @@
             isErasing = false;
             lastX = x;
             lastY = y;
+            resetBrushState();
         }
 
         // 继续画图
         function continueDrawing(x, y) {
             if (isDrawing) {
+                // 计算移动速度
+                const speed = Math.sqrt((x - lastX) ** 2 + (y - lastY) ** 2);
+                speedHistory.push(speed);
+                if (speedHistory.length > 10) speedHistory.shift();
+
+                // 计算压力（基于手部距离）
+                const pressure = calculatePressure();
+                pressureHistory.push(pressure);
+                if (pressureHistory.length > 10) pressureHistory.shift();
+
                 ctx.beginPath();
                 ctx.moveTo(lastX, lastY);
                 ctx.lineTo(x, y);
-                ctx.strokeStyle = currentColor;
-                ctx.lineWidth = currentBrushSize;
-                ctx.lineCap = 'round';
+
+                // 根据模式设置画笔属性
+                setBrushProperties(speed, pressure);
+                
                 ctx.stroke();
+                
+                // 播放音效
+                if (audioEnabled) {
+                    playDrawingSound(speed);
+                }
                 
                 lastX = x;
                 lastY = y;
             }
+        }
+
+        // 计算压力值
+        function calculatePressure() {
+            // 基于手部关键点的Z坐标估算压力
+            return Math.random() * 0.5 + 0.5; // 简化实现
+        }
+
+        // 设置画笔属性
+        function setBrushProperties(speed, pressure) {
+            let brushColor = currentColor;
+            let brushSize = currentBrushSize;
+            let brushAlpha = 1;
+
+            switch (currentMode) {
+                case 'rainbow':
+                    brushColor = getRainbowColor();
+                    break;
+                case 'sparkle':
+                    brushColor = getSparkleColor();
+                    break;
+                case 'speed':
+                    brushSize = currentBrushSize + speed * 2;
+                    brushAlpha = Math.min(1, speed / 10);
+                    break;
+                case 'pressure':
+                    brushSize = currentBrushSize * pressure * 2;
+                    brushAlpha = pressure;
+                    break;
+                case 'normal':
+                default:
+                    // 普通模式，使用默认设置
+                    break;
+            }
+
+            ctx.strokeStyle = brushColor;
+            ctx.lineWidth = brushSize;
+            ctx.lineCap = 'round';
+            ctx.globalAlpha = brushAlpha;
+        }
+
+        // 重置画笔状态
+        function resetBrushState() {
+            ctx.globalAlpha = 1;
+            ctx.strokeStyle = currentColor;
+            ctx.lineWidth = currentBrushSize;
+            ctx.lineCap = 'round';
+        }
+
+        // 获取彩虹颜色
+        function getRainbowColor() {
+            const hue = (Date.now() / 10) % 360;
+            return `hsl(${hue}, 100%, 50%)`;
+        }
+
+        // 获取闪烁颜色
+        function getSparkleColor() {
+            const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff'];
+            return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        // 播放绘画音效
+        function playDrawingSound(speed) {
+            // 创建音效（使用Web Audio API）
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.frequency.setValueAtTime(200 + speed * 50, audioContext.currentTime);
+            gainNode.gain.setValueAtTime(volume * 0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.1);
         }
 
         // 停止画图
@@ -454,6 +1083,124 @@
             console.log(message);
         }
 
+        // 更新画笔模式状态显示
+        function updateBrushModeStatus() {
+            const modeNames = {
+                'normal': '普通模式',
+                'rainbow': '彩虹模式',
+                'sparkle': '闪烁模式',
+                'speed': '速度感应',
+                'pressure': '压力感应'
+            };
+            
+            const statusElement = document.getElementById('brushModeStatus');
+            if (statusElement) {
+                statusElement.textContent = modeNames[currentMode] || '普通模式';
+            }
+        }
+
+        // 更新AR效果状态显示
+        function updateARStatus() {
+            const arNames = {
+                'none': '关闭',
+                'brush': '虚拟画笔',
+                'particles': '粒子效果',
+                'magic': '魔法效果'
+            };
+            
+            const statusElement = document.getElementById('arStatus');
+            if (statusElement) {
+                statusElement.textContent = arNames[currentAR] || '虚拟画笔';
+            }
+        }
+
+        // 更新音效状态显示
+        function updateAudioStatus() {
+            const statusElement = document.getElementById('audioStatus');
+            if (statusElement) {
+                statusElement.textContent = audioEnabled ? `开启 (${Math.round(volume * 100)}%)` : '关闭';
+            }
+        }
+
+        // 更新主题状态显示
+        function updateThemeStatus() {
+            const themeNames = {
+                'default': '默认主题',
+                'space': '太空主题',
+                'ocean': '海洋主题',
+                'forest': '森林主题',
+                'city': '城市主题'
+            };
+            
+            const statusElement = document.getElementById('themeStatus');
+            if (statusElement) {
+                statusElement.textContent = themeNames[currentTheme] || '默认主题';
+            }
+        }
+
+        // 更新画笔大小状态显示
+        function updateBrushSizeStatus() {
+            const statusElement = document.getElementById('brushSizeStatus');
+            if (statusElement) {
+                statusElement.textContent = `${currentBrushSize}px`;
+            }
+        }
+
+        // 更新画笔颜色状态显示
+        function updateBrushColorStatus() {
+            const statusElement = document.getElementById('brushColorStatus');
+            if (statusElement) {
+                statusElement.textContent = currentColor;
+                statusElement.style.color = currentColor;
+                statusElement.style.fontWeight = 'bold';
+            }
+        }
+
+        // 更新游戏状态显示
+        function updateGameStatus() {
+            const gameNames = {
+                'challenge': '绘画挑战',
+                'gesture': '手势游戏',
+                'memory': '记忆绘画',
+                'speed': '速度挑战',
+                null: '未开启'
+            };
+            
+            const statusElement = document.getElementById('gameStatus');
+            if (statusElement) {
+                statusElement.textContent = gameNames[currentGame] || '未开启';
+            }
+        }
+
+        // 更新摄像头状态显示
+        function updateCameraStatus() {
+            const statusElement = document.getElementById('cameraStatus');
+            if (statusElement) {
+                statusElement.textContent = camera ? '已启动' : '已关闭';
+            }
+        }
+
+        // 更新手部追踪状态显示
+        function updateTrackingStatus() {
+            const statusElement = document.getElementById('trackingStatus');
+            if (statusElement) {
+                statusElement.textContent = hands ? '已启动' : '等待中';
+            }
+        }
+
+        // 更新所有状态显示
+        function updateAllStatus() {
+            updateBrushModeStatus();
+            updateARStatus();
+            updateAudioStatus();
+            updateThemeStatus();
+            updateBrushSizeStatus();
+            updateBrushColorStatus();
+            updateGameStatus();
+            updateCameraStatus();
+            updateTrackingStatus();
+        }
+
         // 设置事件监听器
         function setupEventListeners() {
             // 颜色选择
@@ -462,6 +1209,18 @@
                     document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     currentColor = btn.dataset.color;
+                    updateBrushColorStatus();
+                });
+            });
+
+            // 主题选择
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentTheme = btn.dataset.theme;
+                    applyTheme(currentTheme);
+                    updateThemeStatus();
                 });
             });
 
@@ -472,6 +1231,59 @@
             brushSizeSlider.addEventListener('input', (e) => {
                 currentBrushSize = parseInt(e.target.value);
                 brushSizeValue.textContent = currentBrushSize;
+                updateBrushSizeStatus();
+            });
+
+            // 绘画模式
+            document.querySelectorAll('.mode-btn[data-mode]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.mode-btn[data-mode]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentMode = btn.dataset.mode;
+                    updateBrushModeStatus();
+                });
+            });
+
+            // AR效果
+            document.querySelectorAll('.mode-btn[data-ar]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.mode-btn[data-ar]').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentAR = btn.dataset.ar;
+                    updateARStatus();
+                });
+            });
+
+            // 音效控制
+            document.getElementById('audioToggle').addEventListener('click', () => {
+                audioEnabled = !audioEnabled;
+                document.getElementById('audioToggle').classList.toggle('active', audioEnabled);
+                updateAudioStatus();
+            });
+
+            document.getElementById('volumeSlider').addEventListener('input', (e) => {
+                volume = e.target.value / 100;
+                updateAudioStatus();
+            });
+
+            // 游戏模式
+            document.querySelectorAll('.mode-btn[data-game]').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const game = btn.dataset.game;
+                    startGame(game);
+                });
+            });
+
+            // 高级功能按钮
+            document.getElementById('advancedBtn').addEventListener('click', () => {
+                const advancedControls = document.getElementById('advancedControls');
+                advancedControls.classList.toggle('show');
+            });
+
+            // 游戏模式按钮
+            document.getElementById('gameBtn').addEventListener('click', () => {
+                const gameMode = document.getElementById('gameMode');
+                gameMode.classList.toggle('show');
             });
 
             // 清除画布
@@ -492,11 +1304,93 @@
                 if (camera) {
                     camera.stop();
                     video.srcObject = null;
+                    camera = null;
                     updateStatus('摄像头已关闭');
                 } else {
                     init();
                 }
+                updateCameraStatus();
             });
+        }
+
+        // 应用主题
+        function applyTheme(theme) {
+            document.body.className = `theme-${theme}`;
+        }
+
+        // 开始游戏
+        function startGame(gameType) {
+            currentGame = gameType;
+            gameScore = 0;
+            updateGameStatus();
+
+            switch (gameType) {
+                case 'challenge':
+                    startChallengeMode();
+                    break;
+                case 'gesture':
+                    startGestureGame();
+                    break;
+                case 'memory':
+                    startMemoryGame();
+                    break;
+                case 'speed':
+                    startSpeedChallenge();
+                    break;
+            }
+        }
+
+        // 绘画挑战模式
+        function startChallengeMode() {
+            document.getElementById('challengeMode').style.display = 'block';
+            challengeTimeLeft = 30;
+            document.getElementById('challengeTimer').textContent = challengeTimeLeft;
+            document.getElementById('challengeProgress').style.width = '100%';
+
+            challengeTimer = setInterval(() => {
+                challengeTimeLeft--;
+                document.getElementById('challengeTimer').textContent = challengeTimeLeft;
+                document.getElementById('challengeProgress').style.width = (challengeTimeLeft / 30 * 100) + '%';
+
+                if (challengeTimeLeft <= 0) {
+                    clearInterval(challengeTimer);
+                    endChallenge();
+                }
+            }, 1000);
+        }
+
+        // 手势游戏
+        function startGestureGame() {
+            document.getElementById('gestureMode').style.display = 'block';
+            currentGestureIndex = 0;
+            showNextGesture();
+        }
+
+        // 显示下一个手势
+        function showNextGesture() {
+            const gestureDisplay = document.getElementById('gestureDisplay');
+            const gestureScore = document.getElementById('gestureScore');
+            
+            gestureDisplay.textContent = gestureSequence[currentGestureIndex];
+            gestureScore.textContent = gameScore;
+        }
+
+        // 记忆游戏
+        function startMemoryGame() {
+            // 显示图案3秒后隐藏，让用户凭记忆画出来
+            showMemoryPattern();
+        }
+
+        // 速度挑战
+        function startSpeedChallenge() {
+            // 在限定时间内画尽可能多的线条
+            updateStatus('速度挑战：在30秒内画尽可能多的线条！');
+        }
+
+        // 结束挑战
+        function endChallenge() {
+            document.getElementById('challengeMode').style.display = 'none';
+            updateStatus(`挑战结束！得分: ${gameScore}`);
         }
 
         // 启动应用
