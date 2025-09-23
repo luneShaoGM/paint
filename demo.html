@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>摄像头Demo演示</title>
+    <title>手势魔法画板</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-
+        
         body {
             font-family: 'Arial', sans-serif;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
@@ -19,305 +19,484 @@
             flex-direction: column;
             align-items: center;
             padding: 20px;
+            color: white;
         }
-
+        
         .container {
-            max-width: 800px;
+            max-width: 1200px;
             width: 100%;
             text-align: center;
         }
-
+        
         h1 {
-            color: white;
-            margin-bottom: 30px;
+            margin: 20px 0;
             font-size: 2.5em;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
         }
-
-        .video-container {
-            position: relative;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            margin-bottom: 30px;
-        }
-
-        #video {
-            width: 100%;
-            max-width: 640px;
-            height: 480px;
-            object-fit: cover;
-            display: block;
-        }
-
-        .controls {
-            background: rgba(255, 255, 255, 0.95);
+        
+        .control-panel {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
             padding: 20px;
             border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            margin-bottom: 20px;
+            margin: 20px 0;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 15px;
         }
-
-        .btn {
-            padding: 12px 24px;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            background: #667eea;
+        
+        .brush-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 2px solid rgba(255, 255, 255, 0.3);
             color: white;
-            margin: 5px;
+            padding: 10px 20px;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s ease;
             font-size: 16px;
         }
-
-        .btn:hover {
-            background: #5a6fd8;
+        
+        .brush-btn:hover, .brush-btn.active {
+            background: rgba(255, 255, 255, 0.3);
             transform: translateY(-2px);
-        }
-
-        .btn.danger {
-            background: #e74c3c;
-        }
-
-        .btn.danger:hover {
-            background: #c0392b;
-        }
-
-        .status {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 15px;
-            border-radius: 10px;
-            text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            margin-top: 20px;
         }
-
-        .status-info {
+        
+        .canvas-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        #mainCanvas {
+            background: rgba(0, 0, 0, 0.7);
+            border-radius: 15px;
+            cursor: crosshair;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        
+        .gesture-hint {
+            margin-top: 15px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+        
+        .color-picker {
             display: flex;
-            justify-content: space-between;
-            margin-bottom: 10px;
-            font-weight: bold;
+            gap: 10px;
+            justify-content: center;
+            margin: 10px 0;
         }
-
-        .status-value {
-            color: #2ecc71;
-            font-weight: bold;
+        
+        .color-option {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 3px solid transparent;
+            transition: transform 0.2s ease;
         }
-
-        .status-value.error {
-            color: #e74c3c;
+        
+        .color-option:hover {
+            transform: scale(1.2);
         }
-
-        .status-value.warning {
-            color: #f39c12;
+        
+        .color-option.active {
+            border-color: white;
+            transform: scale(1.2);
         }
-
-        .instructions {
-            background: rgba(255, 255, 255, 0.9);
-            padding: 20px;
-            border-radius: 10px;
-            text-align: left;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .instructions h3 {
-            color: #333;
-            margin-bottom: 15px;
-        }
-
-        .instructions ul {
-            color: #666;
-            line-height: 1.6;
-        }
-
-        .instructions li {
-            margin-bottom: 8px;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                padding: 10px;
-            }
-            
-            h1 {
-                font-size: 2em;
-            }
-            
-            #video {
-                height: 360px;
-            }
+        
+        .stats {
+            margin-top: 15px;
+            font-size: 14px;
+            opacity: 0.7;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📹 摄像头Demo演示</h1>
+        <h1>🎨 手势魔法画板</h1>
         
-        <div class="video-container">
-            <video id="video" autoplay muted></video>
-        </div>
-        
-        <div class="controls">
-            <button class="btn" id="startBtn">启动摄像头</button>
-            <button class="btn danger" id="stopBtn">停止摄像头</button>
-            <button class="btn" id="toggleMirrorBtn">切换镜像</button>
-        </div>
-        
-        <div class="status">
-            <div class="status-info">
-                <span>摄像头状态:</span>
-                <span class="status-value" id="cameraStatus">未启动</span>
-            </div>
-            <div class="status-info">
-                <span>分辨率:</span>
-                <span class="status-value" id="resolution">-</span>
-            </div>
-            <div class="status-info">
-                <span>帧率:</span>
-                <span class="status-value" id="fps">-</span>
+        <div class="control-panel">
+            <button class="brush-btn active" data-brush="particle">✨ 粒子笔刷</button>
+            <button class="brush-btn" data-brush="neon">🌈 霓虹笔刷</button>
+            <button class="brush-btn" data-brush="water">💧 水墨笔刷</button>
+            <button class="brush-btn" data-brush="star">⭐ 星空笔刷</button>
+            
+            <div class="color-picker">
+                <div class="color-option active" style="background: #ff6b6b;" data-color="#ff6b6b"></div>
+                <div class="color-option" style="background: #4ecdc4;" data-color="#4ecdc4"></div>
+                <div class="color-option" style="background: #45b7d1;" data-color="#45b7d1"></div>
+                <div class="color-option" style="background: #96ceb4;" data-color="#96ceb4"></div>
+                <div class="color-option" style="background: #feca57;" data-color="#feca57"></div>
+                <div class="color-option" style="background: #ff9ff3;" data-color="#ff9ff3"></div>
             </div>
         </div>
         
-        <div class="instructions">
-            <h3>📋 使用说明</h3>
-            <ul>
-                <li><strong>启动摄像头</strong>：点击"启动摄像头"按钮开始使用摄像头</li>
-                <li><strong>停止摄像头</strong>：点击"停止摄像头"按钮关闭摄像头</li>
-                <li><strong>切换镜像</strong>：点击"切换镜像"按钮切换摄像头镜像显示</li>
-                <li><strong>权限设置</strong>：首次使用需要授权摄像头访问权限</li>
-                <li><strong>浏览器兼容</strong>：支持Chrome、Firefox、Safari、Edge等现代浏览器</li>
-            </ul>
+        <div class="canvas-container">
+            <canvas id="mainCanvas" width="800" height="500"></canvas>
+        </div>
+        
+        <div class="gesture-hint">
+            💡 手势提示：握拳清空画布 | 手掌暂停/继续 | 比耶切换笔刷
+        </div>
+        
+        <div class="stats">
+            粒子数量: <span id="particleCount">0</span> | 
+            笔刷大小: <span id="brushSize">5</span>
         </div>
     </div>
 
     <script>
-        // 全局变量
-        let video = document.getElementById('video');
-        let stream = null;
-        let isMirrored = false;
-        let fpsCounter = 0;
-        let lastTime = Date.now();
-
-        // 初始化
-        document.addEventListener('DOMContentLoaded', function() {
-            setupEventListeners();
-            updateStatus('准备就绪', 'normal');
-        });
-
-        // 设置事件监听器
-        function setupEventListeners() {
-            document.getElementById('startBtn').addEventListener('click', startCamera);
-            document.getElementById('stopBtn').addEventListener('click', stopCamera);
-            document.getElementById('toggleMirrorBtn').addEventListener('click', toggleMirror);
-        }
-
-        // 启动摄像头
-        async function startCamera() {
-            try {
-                updateStatus('正在启动摄像头...', 'warning');
+        class MagicCanvas {
+            constructor() {
+                this.canvas = document.getElementById('mainCanvas');
+                this.ctx = this.canvas.getContext('2d');
+                this.particles = [];
+                this.isDrawing = false;
+                this.lastX = 0;
+                this.lastY = 0;
+                this.currentBrush = 'particle';
+                this.currentColor = '#ff6b6b';
+                this.brushSize = 5;
+                this.gestureMode = 'draw'; // draw, erase, pause
                 
-                // 获取摄像头权限
-                stream = await navigator.mediaDevices.getUserMedia({ 
-                    video: {
-                        width: { ideal: 640 },
-                        height: { ideal: 480 },
-                        frameRate: { ideal: 30 }
+                this.init();
+            }
+            
+            init() {
+                this.setupEventListeners();
+                this.setupBrushButtons();
+                this.setupColorPicker();
+                this.animate();
+            }
+            
+            setupEventListeners() {
+                // 鼠标/触摸事件
+                this.canvas.addEventListener('mousedown', (e) => this.startDrawing(e));
+                this.canvas.addEventListener('mousemove', (e) => this.draw(e));
+                this.canvas.addEventListener('mouseup', () => this.stopDrawing());
+                this.canvas.addEventListener('mouseout', () => this.stopDrawing());
+                
+                this.canvas.addEventListener('touchstart', (e) => {
+                    e.preventDefault();
+                    this.startDrawing(e.touches[0]);
+                });
+                this.canvas.addEventListener('touchmove', (e) => {
+                    e.preventDefault();
+                    this.draw(e.touches[0]);
+                });
+                this.canvas.addEventListener('touchend', () => this.stopDrawing());
+                
+                // 键盘事件模拟手势（实际项目中会用摄像头手势识别）
+                document.addEventListener('keydown', (e) => {
+                    switch(e.key) {
+                        case ' ': // 空格键模拟手掌暂停
+                            this.togglePause();
+                            break;
+                        case 'c': // C键模拟握拳清空
+                            this.clearCanvas();
+                            break;
+                        case 'b': // B键模拟比耶切换笔刷
+                            this.cycleBrush();
+                            break;
                     }
                 });
+            }
+            
+            setupBrushButtons() {
+                document.querySelectorAll('.brush-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        document.querySelectorAll('.brush-btn').forEach(b => b.classList.remove('active'));
+                        btn.classList.add('active');
+                        this.currentBrush = btn.dataset.brush;
+                    });
+                });
+            }
+            
+            setupColorPicker() {
+                document.querySelectorAll('.color-option').forEach(color => {
+                    color.addEventListener('click', () => {
+                        document.querySelectorAll('.color-option').forEach(c => c.classList.remove('active'));
+                        color.classList.add('active');
+                        this.currentColor = color.dataset.color;
+                    });
+                });
+            }
+            
+            startDrawing(e) {
+                if (this.gestureMode === 'pause') return;
                 
-                video.srcObject = stream;
+                this.isDrawing = true;
+                const rect = this.canvas.getBoundingClientRect();
+                this.lastX = e.clientX - rect.left;
+                this.lastY = e.clientY - rect.top;
+            }
+            
+            draw(e) {
+                if (!this.isDrawing || this.gestureMode === 'pause') return;
                 
-                // 等待视频加载
-                video.onloadedmetadata = function() {
-                    updateStatus('摄像头已启动', 'success');
-                    updateResolution();
-                    startFpsCounter();
+                const rect = this.canvas.getBoundingClientRect();
+                const currentX = e.clientX - rect.left;
+                const currentY = e.clientY - rect.top;
+                
+                // 根据笔刷类型创建不同效果
+                switch(this.currentBrush) {
+                    case 'particle':
+                        this.createParticleTrail(currentX, currentY);
+                        break;
+                    case 'neon':
+                        this.createNeonTrail(currentX, currentY);
+                        break;
+                    case 'water':
+                        this.createWaterTrail(currentX, currentY);
+                        break;
+                    case 'star':
+                        this.createStarTrail(currentX, currentY);
+                        break;
+                }
+                
+                this.lastX = currentX;
+                this.lastY = currentY;
+            }
+            
+            stopDrawing() {
+                this.isDrawing = false;
+            }
+            
+            createParticleTrail(x, y) {
+                const particleCount = 5 + Math.floor(Math.random() * 10);
+                
+                for (let i = 0; i < particleCount; i++) {
+                    this.particles.push({
+                        x: x + (Math.random() - 0.5) * 20,
+                        y: y + (Math.random() - 0.5) * 20,
+                        size: Math.random() * 4 + 1,
+                        speedX: (Math.random() - 0.5) * 4,
+                        speedY: (Math.random() - 0.5) * 4,
+                        color: this.currentColor,
+                        life: 1,
+                        decay: 0.02 + Math.random() * 0.02
+                    });
+                }
+            }
+            
+            createNeonTrail(x, y) {
+                this.ctx.strokeStyle = this.currentColor;
+                this.ctx.lineWidth = this.brushSize;
+                this.ctx.lineJoin = 'round';
+                this.ctx.lineCap = 'round';
+                
+                // 霓虹发光效果
+                this.ctx.shadowBlur = 15;
+                this.ctx.shadowColor = this.currentColor;
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.lastX, this.lastY);
+                this.ctx.lineTo(x, y);
+                this.ctx.stroke();
+                
+                this.ctx.shadowBlur = 0;
+            }
+            
+            createWaterTrail(x, y) {
+                this.ctx.strokeStyle = this.currentColor;
+                this.ctx.lineWidth = this.brushSize;
+                this.ctx.globalAlpha = 0.7;
+                
+                this.ctx.beginPath();
+                this.ctx.moveTo(this.lastX, this.lastY);
+                this.ctx.lineTo(x, y);
+                this.ctx.stroke();
+                
+                // 创建水墨扩散粒子
+                for (let i = 0; i < 3; i++) {
+                    this.particles.push({
+                        x: x + (Math.random() - 0.5) * 30,
+                        y: y + (Math.random() - 0.5) * 30,
+                        size: Math.random() * 8 + 2,
+                        speedX: (Math.random() - 0.5) * 1,
+                        speedY: (Math.random() - 0.5) * 1,
+                        color: this.currentColor,
+                        life: 1,
+                        decay: 0.01,
+                        type: 'water'
+                    });
+                }
+                
+                this.ctx.globalAlpha = 1;
+            }
+            
+            createStarTrail(x, y) {
+                // 创建星星粒子
+                this.particles.push({
+                    x: x,
+                    y: y,
+                    size: Math.random() * 3 + 1,
+                    speedX: 0,
+                    speedY: 0,
+                    color: '#ffffff',
+                    life: 1,
+                    decay: 0.005,
+                    type: 'star',
+                    twinkle: Math.random() * Math.PI * 2
+                });
+                
+                // 连接星星（简化版的星座效果）
+                if (this.particles.length > 1) {
+                    const lastStar = this.particles[this.particles.length - 2];
+                    if (lastStar && lastStar.type === 'star') {
+                        this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.3)';
+                        this.ctx.lineWidth = 1;
+                        this.ctx.beginPath();
+                        this.ctx.moveTo(lastStar.x, lastStar.y);
+                        this.ctx.lineTo(x, y);
+                        this.ctx.stroke();
+                    }
+                }
+            }
+            
+            updateParticles() {
+                for (let i = this.particles.length - 1; i >= 0; i--) {
+                    const p = this.particles[i];
+                    
+                    p.x += p.speedX;
+                    p.y += p.speedY;
+                    p.life -= p.decay;
+                    
+                    if (p.life <= 0) {
+                        this.particles.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // 绘制粒子
+                    this.ctx.globalAlpha = p.life;
+                    
+                    if (p.type === 'star') {
+                        // 星星闪烁效果
+                        p.twinkle += 0.1;
+                        const scale = 0.5 + Math.sin(p.twinkle) * 0.5;
+                        this.ctx.fillStyle = p.color;
+                        this.drawStar(p.x, p.y, p.size * scale, p.size * 0.5 * scale, 5);
+                    } else {
+                        this.ctx.fillStyle = p.color;
+                        this.ctx.beginPath();
+                        this.ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2);
+                        this.ctx.fill();
+                    }
+                }
+                this.ctx.globalAlpha = 1;
+                
+                // 更新统计信息
+                document.getElementById('particleCount').textContent = this.particles.length;
+            }
+            
+            drawStar(cx, cy, outerRadius, innerRadius, points) {
+                this.ctx.beginPath();
+                for (let i = 0; i < points * 2; i++) {
+                    const radius = i % 2 === 0 ? outerRadius : innerRadius;
+                    const angle = (i * Math.PI) / points - Math.PI / 2;
+                    const x = cx + radius * Math.cos(angle);
+                    const y = cy + radius * Math.sin(angle);
+                    
+                    if (i === 0) {
+                        this.ctx.moveTo(x, y);
+                    } else {
+                        this.ctx.lineTo(x, y);
+                    }
+                }
+                this.ctx.closePath();
+                this.ctx.fill();
+            }
+            
+            animate() {
+                requestAnimationFrame(() => this.animate());
+                
+                // 半透明背景创造拖尾效果
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 0.05)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                
+                this.updateParticles();
+            }
+            
+            // 手势功能模拟
+            togglePause() {
+                this.gestureMode = this.gestureMode === 'pause' ? 'draw' : 'pause';
+                this.showGestureFeedback(this.gestureMode === 'pause' ? '⏸️ 绘画已暂停' : '▶️ 绘画继续');
+            }
+            
+            clearCanvas() {
+                this.ctx.fillStyle = 'rgba(0, 0, 0, 1)';
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+                this.particles = [];
+                this.showGestureFeedback('👊 画布已清空');
+            }
+            
+            cycleBrush() {
+                const brushes = ['particle', 'neon', 'water', 'star'];
+                const currentIndex = brushes.indexOf(this.currentBrush);
+                this.currentBrush = brushes[(currentIndex + 1) % brushes.length];
+                
+                // 更新UI
+                document.querySelectorAll('.brush-btn').forEach(btn => btn.classList.remove('active'));
+                document.querySelector(`[data-brush="${this.currentBrush}"]`).classList.add('active');
+                
+                this.showGestureFeedback(`✌️ 切换到${this.getBrushName(this.currentBrush)}`);
+            }
+            
+            getBrushName(brushType) {
+                const names = {
+                    'particle': '粒子笔刷',
+                    'neon': '霓虹笔刷', 
+                    'water': '水墨笔刷',
+                    'star': '星空笔刷'
                 };
+                return names[brushType];
+            }
+            
+            showGestureFeedback(message) {
+                // 创建临时提示
+                const feedback = document.createElement('div');
+                feedback.textContent = message;
+                feedback.style.cssText = `
+                    position: fixed;
+                    top: 50%;
+                    left: 50%;
+                    transform: translate(-50%, -50%);
+                    background: rgba(0, 0, 0, 0.8);
+                    color: white;
+                    padding: 15px 30px;
+                    border-radius: 25px;
+                    font-size: 18px;
+                    z-index: 1000;
+                    animation: fadeOut 2s forwards;
+                `;
                 
-            } catch (error) {
-                console.error('启动摄像头失败:', error);
-                updateStatus('启动失败: ' + error.message, 'error');
+                document.body.appendChild(feedback);
+                
+                setTimeout(() => {
+                    document.body.removeChild(feedback);
+                }, 2000);
             }
         }
-
-        // 停止摄像头
-        function stopCamera() {
-            if (stream) {
-                stream.getTracks().forEach(track => track.stop());
-                stream = null;
-                video.srcObject = null;
-                updateStatus('摄像头已停止', 'normal');
-                updateResolution();
-                stopFpsCounter();
-            }
-        }
-
-        // 切换镜像
-        function toggleMirror() {
-            isMirrored = !isMirrored;
-            if (isMirrored) {
-                video.style.transform = 'scaleX(-1)';
-                updateStatus('镜像模式已开启', 'success');
-            } else {
-                video.style.transform = 'scaleX(1)';
-                updateStatus('镜像模式已关闭', 'success');
-            }
-        }
-
-        // 更新状态
-        function updateStatus(message, type = 'normal') {
-            const statusElement = document.getElementById('cameraStatus');
-            statusElement.textContent = message;
-            statusElement.className = 'status-value';
-            
-            if (type === 'error') {
-                statusElement.classList.add('error');
-            } else if (type === 'warning') {
-                statusElement.classList.add('warning');
-            }
-        }
-
-        // 更新分辨率显示
-        function updateResolution() {
-            const resolutionElement = document.getElementById('resolution');
-            if (video.videoWidth && video.videoHeight) {
-                resolutionElement.textContent = `${video.videoWidth} x ${video.videoHeight}`;
-            } else {
-                resolutionElement.textContent = '-';
-            }
-        }
-
-        // 开始FPS计数
-        function startFpsCounter() {
-            fpsCounter = 0;
-            lastTime = Date.now();
-            
-            function countFps() {
-                fpsCounter++;
-                const currentTime = Date.now();
-                if (currentTime - lastTime >= 1000) {
-                    document.getElementById('fps').textContent = `${fpsCounter} FPS`;
-                    fpsCounter = 0;
-                    lastTime = currentTime;
-                }
-                if (stream) {
-                    requestAnimationFrame(countFps);
-                }
-            }
-            
-            countFps();
-        }
-
-        // 停止FPS计数
-        function stopFpsCounter() {
-            document.getElementById('fps').textContent = '-';
-        }
-
-        // 页面卸载时清理
-        window.addEventListener('beforeunload', function() {
-            stopCamera();
+        
+        // 页面加载完成后初始化
+        window.addEventListener('load', () => {
+            new MagicCanvas();
         });
+        
+        // 添加CSS动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeOut {
+                0% { opacity: 1; }
+                70% { opacity: 1; }
+                100% { opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
     </script>
 </body>
 </html>

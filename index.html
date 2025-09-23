@@ -124,6 +124,33 @@
             border-width: 3px;
         }
 
+        /* 双手颜色选择器样式 */
+        .hand-color-palette {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .hand-color-palette .color-btn {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .hand-color-palette .color-btn:hover {
+            transform: scale(1.2);
+            border-color: rgba(255, 255, 255, 0.6);
+        }
+
+        .hand-color-palette .color-btn.active {
+            border-color: #ffd700;
+            box-shadow: 0 0 10px rgba(255,215,0,0.5);
+            transform: scale(1.1);
+        }
+
         .brush-size {
             display: flex;
             align-items: center;
@@ -305,45 +332,75 @@
             }
         }
 
-        /* 主题模式样式 */
-        .theme-space {
-            background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);
-        }
-
-        .theme-ocean {
-            background: linear-gradient(135deg, #0077be 0%, #00a8cc 50%, #40e0d0 100%);
-        }
-
-        .theme-forest {
-            background: linear-gradient(135deg, #2d5016 0%, #4a7c59 50%, #8fbc8f 100%);
-        }
-
-        .theme-city {
-            background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #7f8c8d 100%);
-        }
-
-        .theme-selector {
+        /* 图案选择样式 */
+        .pattern-selector {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
+            flex-wrap: wrap;
         }
 
-        .theme-btn {
-            width: 25px;
-            height: 25px;
-            border-radius: 3px;
-            border: 1px solid #fff;
+        .pattern-btn {
+            width: 60px;
+            height: 60px;
+            border-radius: 8px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
             cursor: pointer;
-            transition: all 0.2s ease;
+            transition: all 0.3s ease;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            position: relative;
+            overflow: hidden;
         }
 
-        .theme-btn:hover {
+        .pattern-btn:hover {
             transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.6);
         }
 
-        .theme-btn.active {
+        .pattern-btn.active {
             border-color: #ffd700;
             box-shadow: 0 0 15px rgba(255,215,0,0.5);
+        }
+
+        .pattern-btn::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.3);
+            transition: opacity 0.3s ease;
+        }
+
+        .pattern-btn:hover::after {
+            opacity: 0.1;
+        }
+
+        .pattern-btn.active::after {
+            opacity: 0;
+        }
+
+        /* 图案显示区域 */
+        .pattern-display {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            max-width: 300px;
+            max-height: 300px;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0.7;
+            transition: opacity 0.3s ease;
+        }
+
+        .pattern-display img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
         }
 
         /* 高级操作面板 */
@@ -771,6 +828,11 @@
             </div>
             <canvas id="canvas" width="800" height="500"></canvas>
             
+            <!-- 图案显示区域 -->
+            <div class="pattern-display" id="patternDisplay" style="display: none;">
+                <img id="patternImage" src="" alt="当前图案">
+            </div>
+            
             <!-- 手势状态显示 -->
             <div class="gesture-overlay" id="gestureOverlay">
                 <div class="gesture-status-item">
@@ -798,13 +860,15 @@
         <div class="controls">
             <div class="left-controls">
                 <div class="control-group">
-                    <label>主题模式</label>
-                    <div class="theme-selector">
-                        <div class="theme-btn active" data-theme="default" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);"></div>
-                        <div class="theme-btn" data-theme="space" style="background: linear-gradient(135deg, #0c0c0c 0%, #1a1a2e 50%, #16213e 100%);"></div>
-                        <div class="theme-btn" data-theme="ocean" style="background: linear-gradient(135deg, #0077be 0%, #00a8cc 50%, #40e0d0 100%);"></div>
-                        <div class="theme-btn" data-theme="forest" style="background: linear-gradient(135deg, #2d5016 0%, #4a7c59 50%, #8fbc8f 100%);"></div>
-                        <div class="theme-btn" data-theme="city" style="background: linear-gradient(135deg, #2c3e50 0%, #34495e 50%, #7f8c8d 100%);"></div>
+                    <label>图案选择</label>
+                    <div class="pattern-selector">
+                        <div class="pattern-btn active" data-pattern="none" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <div style="position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: white; font-size: 12px; font-weight: bold;">无</div>
+                        </div>
+                        <div class="pattern-btn" data-pattern="apple" style="background-image: url('assets/apple.png');"></div>
+                        <div class="pattern-btn" data-pattern="car" style="background-image: url('assets/car.png');"></div>
+                        <div class="pattern-btn" data-pattern="girl" style="background-image: url('assets/girl.png');"></div>
+                        <div class="pattern-btn" data-pattern="rabbit" style="background-image: url('assets/rabbit.png');"></div>
                     </div>
                 </div>
 
@@ -817,16 +881,30 @@
                 </div>
 
                 <div class="control-group">
-                    <label>画笔颜色</label>
-                    <div class="color-palette">
-                        <div class="color-btn active" data-color="#000000" style="background: #000000;"></div>
-                        <div class="color-btn" data-color="#ff0000" style="background: #ff0000;"></div>
-                        <div class="color-btn" data-color="#00ff00" style="background: #00ff00;"></div>
-                        <div class="color-btn" data-color="#0000ff" style="background: #0000ff;"></div>
-                        <div class="color-btn" data-color="#ffff00" style="background: #ffff00;"></div>
-                        <div class="color-btn" data-color="#ff00ff" style="background: #ff00ff;"></div>
-                        <div class="color-btn" data-color="#00ffff" style="background: #00ffff;"></div>
-                        <div class="color-btn" data-color="#ffa500" style="background: #ffa500;"></div>
+                    <label>左手颜色</label>
+                    <div class="hand-color-palette" data-hand="left">
+                        <div class="color-btn active" data-color="#ff6b6b" style="background: #ff6b6b;"></div>
+                        <div class="color-btn" data-color="#4ecdc4" style="background: #4ecdc4;"></div>
+                        <div class="color-btn" data-color="#45b7d1" style="background: #45b7d1;"></div>
+                        <div class="color-btn" data-color="#96ceb4" style="background: #96ceb4;"></div>
+                        <div class="color-btn" data-color="#feca57" style="background: #feca57;"></div>
+                        <div class="color-btn" data-color="#ff9ff3" style="background: #ff9ff3;"></div>
+                        <div class="color-btn" data-color="#ff6b6b" style="background: #ff6b6b;"></div>
+                        <div class="color-btn" data-color="#a8edea" style="background: #a8edea;"></div>
+                    </div>
+                </div>
+
+                <div class="control-group">
+                    <label>右手颜色</label>
+                    <div class="hand-color-palette" data-hand="right">
+                        <div class="color-btn" data-color="#ff6b6b" style="background: #ff6b6b;"></div>
+                        <div class="color-btn" data-color="#4ecdc4" style="background: #4ecdc4;"></div>
+                        <div class="color-btn active" data-color="#45b7d1" style="background: #45b7d1;"></div>
+                        <div class="color-btn" data-color="#96ceb4" style="background: #96ceb4;"></div>
+                        <div class="color-btn" data-color="#feca57" style="background: #feca57;"></div>
+                        <div class="color-btn" data-color="#ff9ff3" style="background: #ff9ff3;"></div>
+                        <div class="color-btn" data-color="#ff6b6b" style="background: #ff6b6b;"></div>
+                        <div class="color-btn" data-color="#a8edea" style="background: #a8edea;"></div>
                     </div>
                 </div>
             </div>
@@ -1014,16 +1092,20 @@
             <span id="audioStatus">关闭</span>
         </div>
         <div class="gesture-info">
-            <span>主题:</span>
-            <span id="themeStatus">默认主题</span>
+            <span>图案:</span>
+            <span id="patternStatus">无图案</span>
         </div>
         <div class="gesture-info">
             <span>画笔大小:</span>
             <span id="brushSizeStatus">5px</span>
         </div>
         <div class="gesture-info">
-            <span>画笔颜色:</span>
-            <span id="brushColorStatus">#000000</span>
+            <span>左手颜色:</span>
+            <span id="leftHandColorStatus">红色</span>
+        </div>
+        <div class="gesture-info">
+            <span>右手颜色:</span>
+            <span id="rightHandColorStatus">蓝色</span>
         </div>
         <div class="gesture-info">
             <span>游戏模式:</span>
@@ -1062,7 +1144,7 @@
         let handLandmarks = document.getElementById('handLandmarks');
 
         // 新增功能变量
-        let currentTheme = 'default';
+        let currentPattern = 'none';
         let currentMode = 'normal';
         let currentAR = 'brush';
         let audioEnabled = false;
@@ -1372,13 +1454,18 @@
                 ctx.lineWidth = handsState[handType].brushSize;
                 ctx.globalAlpha = 1;
                 
-                // 如果是第一次绘制，移动到起始点
-                if (handsState[handType].lastX === x && handsState[handType].lastY === y) {
-                    ctx.moveTo(x, y);
+                // 图案涂色功能
+                if (currentPattern !== 'none') {
+                    drawOnPattern(x, y, handType);
                 } else {
-                    // 绘制从上一个点到当前点的线条
-                    ctx.lineTo(x, y);
-                    ctx.stroke();
+                    // 如果是第一次绘制，移动到起始点
+                    if (handsState[handType].lastX === x && handsState[handType].lastY === y) {
+                        ctx.moveTo(x, y);
+                    } else {
+                        // 绘制从上一个点到当前点的线条
+                        ctx.lineTo(x, y);
+                        ctx.stroke();
+                    }
                 }
                 
                 // 播放音效
@@ -1657,19 +1744,19 @@
             }
         }
 
-        // 更新主题状态显示
-        function updateThemeStatus() {
-            const themeNames = {
-                'default': '默认主题',
-                'space': '太空主题',
-                'ocean': '海洋主题',
-                'forest': '森林主题',
-                'city': '城市主题'
+        // 更新图案状态显示
+        function updatePatternStatus() {
+            const patternNames = {
+                'none': '无图案',
+                'apple': '苹果',
+                'car': '汽车',
+                'girl': '女孩',
+                'rabbit': '兔子'
             };
             
-            const statusElement = document.getElementById('themeStatus');
+            const statusElement = document.getElementById('patternStatus');
             if (statusElement) {
-                statusElement.textContent = themeNames[currentTheme] || '默认主题';
+                statusElement.textContent = patternNames[currentPattern] || '无图案';
             }
         }
 
@@ -1681,12 +1768,40 @@
             }
         }
 
-        // 更新画笔颜色状态显示
-        function updateBrushColorStatus() {
-            const statusElement = document.getElementById('brushColorStatus');
+        // 更新左手颜色状态显示
+        function updateLeftHandColorStatus() {
+            const statusElement = document.getElementById('leftHandColorStatus');
             if (statusElement) {
-                statusElement.textContent = currentColor;
-                statusElement.style.color = currentColor;
+                const colorNames = {
+                    '#ff6b6b': '红色',
+                    '#4ecdc4': '青色',
+                    '#45b7d1': '蓝色',
+                    '#96ceb4': '绿色',
+                    '#feca57': '黄色',
+                    '#ff9ff3': '粉色',
+                    '#a8edea': '浅青色'
+                };
+                statusElement.textContent = colorNames[handsState.left.color] || '红色';
+                statusElement.style.color = handsState.left.color;
+                statusElement.style.fontWeight = 'bold';
+            }
+        }
+
+        // 更新右手颜色状态显示
+        function updateRightHandColorStatus() {
+            const statusElement = document.getElementById('rightHandColorStatus');
+            if (statusElement) {
+                const colorNames = {
+                    '#ff6b6b': '红色',
+                    '#4ecdc4': '青色',
+                    '#45b7d1': '蓝色',
+                    '#96ceb4': '绿色',
+                    '#feca57': '黄色',
+                    '#ff9ff3': '粉色',
+                    '#a8edea': '浅青色'
+                };
+                statusElement.textContent = colorNames[handsState.right.color] || '蓝色';
+                statusElement.style.color = handsState.right.color;
                 statusElement.style.fontWeight = 'bold';
             }
         }
@@ -1728,9 +1843,10 @@
             updateBrushModeStatus();
             updateARStatus();
             updateAudioStatus();
-            updateThemeStatus();
+            updatePatternStatus();
             updateBrushSizeStatus();
-            updateBrushColorStatus();
+            updateLeftHandColorStatus();
+            updateRightHandColorStatus();
             updateGameStatus();
             updateCameraStatus();
             updateTrackingStatus();
@@ -1738,24 +1854,34 @@
 
         // 设置事件监听器
         function setupEventListeners() {
-            // 颜色选择
-            document.querySelectorAll('.color-btn').forEach(btn => {
+            // 左手颜色选择
+            document.querySelectorAll('.hand-color-palette[data-hand="left"] .color-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.hand-color-palette[data-hand="left"] .color-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    currentColor = btn.dataset.color;
-                    updateBrushColorStatus();
+                    handsState.left.color = btn.dataset.color;
+                    updateLeftHandColorStatus();
                 });
             });
 
-            // 主题选择
-            document.querySelectorAll('.theme-btn').forEach(btn => {
+            // 右手颜色选择
+            document.querySelectorAll('.hand-color-palette[data-hand="right"] .color-btn').forEach(btn => {
                 btn.addEventListener('click', () => {
-                    document.querySelectorAll('.theme-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.hand-color-palette[data-hand="right"] .color-btn').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    currentTheme = btn.dataset.theme;
-                    applyTheme(currentTheme);
-                    updateThemeStatus();
+                    handsState.right.color = btn.dataset.color;
+                    updateRightHandColorStatus();
+                });
+            });
+
+            // 图案选择
+            document.querySelectorAll('.pattern-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.pattern-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentPattern = btn.dataset.pattern;
+                    updatePatternDisplay();
+                    updatePatternStatus();
                 });
             });
 
@@ -1898,9 +2024,43 @@
             });
         }
 
-        // 应用主题
-        function applyTheme(theme) {
-            document.body.className = `theme-${theme}`;
+        // 更新图案显示
+        function updatePatternDisplay() {
+            const patternDisplay = document.getElementById('patternDisplay');
+            const patternImage = document.getElementById('patternImage');
+            
+            if (currentPattern === 'none') {
+                patternDisplay.style.display = 'none';
+            } else {
+                patternDisplay.style.display = 'block';
+                patternImage.src = `assets/${currentPattern}.png`;
+                patternImage.alt = `图案: ${currentPattern}`;
+            }
+        }
+
+        // 图案涂色功能
+        function drawOnPattern(x, y, handType) {
+            if (currentPattern === 'none') return;
+            
+            // 在图案上绘制线条
+            ctx.globalCompositeOperation = 'source-over';
+            ctx.strokeStyle = handsState[handType].color;
+            ctx.lineWidth = handsState[handType].brushSize;
+            ctx.globalAlpha = 0.8;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            
+            // 如果是第一次绘制，移动到起始点
+            if (handsState[handType].lastX === x && handsState[handType].lastY === y) {
+                ctx.beginPath();
+                ctx.moveTo(x, y);
+            } else {
+                // 绘制从上一个点到当前点的线条
+                ctx.lineTo(x, y);
+                ctx.stroke();
+            }
+            
+            ctx.globalAlpha = 1;
         }
 
         // 开始游戏
