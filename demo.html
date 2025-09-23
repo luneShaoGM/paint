@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>摄像头Demo演示</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+            text-align: center;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .video-container {
+            position: relative;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 30px;
+        }
+
+        #video {
+            width: 100%;
+            max-width: 640px;
+            height: 480px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .controls {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-bottom: 20px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            background: #667eea;
+            color: white;
+            margin: 5px;
+            font-size: 16px;
+        }
+
+        .btn:hover {
+            background: #5a6fd8;
+            transform: translateY(-2px);
+        }
+
+        .btn.danger {
+            background: #e74c3c;
+        }
+
+        .btn.danger:hover {
+            background: #c0392b;
+        }
+
+        .status {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            margin-top: 20px;
+        }
+
+        .status-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+
+        .status-value {
+            color: #2ecc71;
+            font-weight: bold;
+        }
+
+        .status-value.error {
+            color: #e74c3c;
+        }
+
+        .status-value.warning {
+            color: #f39c12;
+        }
+
+        .instructions {
+            background: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: left;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .instructions h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .instructions ul {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .instructions li {
+            margin-bottom: 8px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            
+            h1 {
+                font-size: 2em;
+            }
+            
+            #video {
+                height: 360px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📹 摄像头Demo演示</h1>
+        
+        <div class="video-container">
+            <video id="video" autoplay muted></video>
+        </div>
+        
+        <div class="controls">
+            <button class="btn" id="startBtn">启动摄像头</button>
+            <button class="btn danger" id="stopBtn">停止摄像头</button>
+            <button class="btn" id="toggleMirrorBtn">切换镜像</button>
+        </div>
+        
+        <div class="status">
+            <div class="status-info">
+                <span>摄像头状态:</span>
+                <span class="status-value" id="cameraStatus">未启动</span>
+            </div>
+            <div class="status-info">
+                <span>分辨率:</span>
+                <span class="status-value" id="resolution">-</span>
+            </div>
+            <div class="status-info">
+                <span>帧率:</span>
+                <span class="status-value" id="fps">-</span>
+            </div>
+        </div>
+        
+        <div class="instructions">
+            <h3>📋 使用说明</h3>
+            <ul>
+                <li><strong>启动摄像头</strong>：点击"启动摄像头"按钮开始使用摄像头</li>
+                <li><strong>停止摄像头</strong>：点击"停止摄像头"按钮关闭摄像头</li>
+                <li><strong>切换镜像</strong>：点击"切换镜像"按钮切换摄像头镜像显示</li>
+                <li><strong>权限设置</strong>：首次使用需要授权摄像头访问权限</li>
+                <li><strong>浏览器兼容</strong>：支持Chrome、Firefox、Safari、Edge等现代浏览器</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        // 全局变量
+        let video = document.getElementById('video');
+        let stream = null;
+        let isMirrored = false;
+        let fpsCounter = 0;
+        let lastTime = Date.now();
+
+        // 初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            setupEventListeners();
+            updateStatus('准备就绪', 'normal');
+        });
+
+        // 设置事件监听器
+        function setupEventListeners() {
+            document.getElementById('startBtn').addEventListener('click', startCamera);
+            document.getElementById('stopBtn').addEventListener('click', stopCamera);
+            document.getElementById('toggleMirrorBtn').addEventListener('click', toggleMirror);
+        }
+
+        // 启动摄像头
+        async function startCamera() {
+            try {
+                updateStatus('正在启动摄像头...', 'warning');
+                
+                // 获取摄像头权限
+                stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: {
+                        width: { ideal: 640 },
+                        height: { ideal: 480 },
+                        frameRate: { ideal: 30 }
+                    }
+                });
+                
+                video.srcObject = stream;
+                
+                // 等待视频加载
+                video.onloadedmetadata = function() {
+                    updateStatus('摄像头已启动', 'success');
+                    updateResolution();
+                    startFpsCounter();
+                };
+                
+            } catch (error) {
+                console.error('启动摄像头失败:', error);
+                updateStatus('启动失败: ' + error.message, 'error');
+            }
+        }
+
+        // 停止摄像头
+        function stopCamera() {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+                video.srcObject = null;
+                updateStatus('摄像头已停止', 'normal');
+                updateResolution();
+                stopFpsCounter();
+            }
+        }
+
+        // 切换镜像
+        function toggleMirror() {
+            isMirrored = !isMirrored;
+            if (isMirrored) {
+                video.style.transform = 'scaleX(-1)';
+                updateStatus('镜像模式已开启', 'success');
+            } else {
+                video.style.transform = 'scaleX(1)';
+                updateStatus('镜像模式已关闭', 'success');
+            }
+        }
+
+        // 更新状态
+        function updateStatus(message, type = 'normal') {
+            const statusElement = document.getElementById('cameraStatus');
+            statusElement.textContent = message;
+            statusElement.className = 'status-value';
+            
+            if (type === 'error') {
+                statusElement.classList.add('error');
+            } else if (type === 'warning') {
+                statusElement.classList.add('warning');
+            }
+        }
+
+        // 更新分辨率显示
+        function updateResolution() {
+            const resolutionElement = document.getElementById('resolution');
+            if (video.videoWidth && video.videoHeight) {
+                resolutionElement.textContent = `${video.videoWidth} x ${video.videoHeight}`;
+            } else {
+                resolutionElement.textContent = '-';
+            }
+        }
+
+        // 开始FPS计数
+        function startFpsCounter() {
+            fpsCounter = 0;
+            lastTime = Date.now();
+            
+            function countFps() {
+                fpsCounter++;
+                const currentTime = Date.now();
+                if (currentTime - lastTime >= 1000) {
+                    document.getElementById('fps').textContent = `${fpsCounter} FPS`;
+                    fpsCounter = 0;
+                    lastTime = currentTime;
+                }
+                if (stream) {
+                    requestAnimationFrame(countFps);
+                }
+            }
+            
+            countFps();
+        }
+
+        // 停止FPS计数
+        function stopFpsCounter() {
+            document.getElementById('fps').textContent = '-';
+        }
+
+        // 页面卸载时清理
+        window.addEventListener('beforeunload', function() {
+            stopCamera();
+        });
+    </script>
+</body>
+</html>

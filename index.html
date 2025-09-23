@@ -13,39 +13,34 @@
 
         body {
             font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #000;
             height: 100vh;
             margin: 0;
-            padding: 10px;
+            padding: 0;
             overflow: hidden;
         }
 
         .container {
-            display: grid;
-            grid-template-columns: 1fr;
-            grid-template-rows: auto auto 1fr;
-            gap: 10px;
+            position: relative;
+            width: 100vw;
             height: 100vh;
-            max-width: 100vw;
         }
 
         .canvas-container {
-            position: relative;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-            grid-column: 1;
-            grid-row: 1;
+            position: absolute;
+            top: 0;
+            left: 0;
             width: 100%;
-            height: 500px;
+            height: 100%;
+            z-index: 1;
         }
 
         #canvas {
             background: transparent;
-            border: 2px solid #333;
+            border: none;
             cursor: crosshair;
             width: 100%;
-            height: 500px;
+            height: 100%;
             position: absolute;
             top: 0;
             left: 0;
@@ -66,53 +61,57 @@
             height: 100%;
             object-fit: cover;
             display: block;
+            transform: scaleX(-1);
         }
 
         .controls {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 10px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            position: absolute;
+            bottom: 8px;
+            /* left: 8px; */
+            right: 8px;
+            width: 20%;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 8px;
+            border-radius: 4px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
             display: grid;
             grid-template-columns: 2fr 1fr;
-            gap: 15px;
-            grid-column: 1 / -1;
-            grid-row: 2;
-            align-items: start;
+            gap: 8px;
+            z-index: 10;
         }
 
         .left-controls {
             display: flex;
             flex-direction: column;
-            gap: 10px;
+            gap: 6px;
         }
 
         .control-group {
             display: flex;
             flex-direction: column;
-            gap: 5px;
-            font-size: 12px;
+            gap: 3px;
+            font-size: 10px;
         }
 
         .control-group label {
             font-weight: bold;
             color: #333;
-            font-size: 11px;
+            font-size: 9px;
         }
 
         .color-palette {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
-            gap: 3px;
+            gap: 2px;
         }
 
         .color-btn {
-            width: 25px;
-            height: 25px;
-            border: 2px solid #ddd;
-            border-radius: 4px;
+            width: 18px;
+            height: 18px;
+            border: 1px solid #ddd;
+            border-radius: 2px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .color-btn:hover {
@@ -143,20 +142,19 @@
         }
 
         .btn {
-            padding: 6px 10px;
+            padding: 4px 8px;
             border: none;
-            border-radius: 4px;
+            border-radius: 2px;
             cursor: pointer;
-            font-weight: bold;
-            transition: all 0.3s ease;
+            font-weight: normal;
+            transition: all 0.2s ease;
             background: #667eea;
             color: white;
-            font-size: 10px;
+            font-size: 9px;
         }
 
         .btn:hover {
             background: #5a6fd8;
-            transform: translateY(-2px);
         }
 
         .btn.danger {
@@ -168,20 +166,24 @@
         }
 
         .status {
+            display: none;
+            position: absolute;
+            bottom: 8px;
+            left: 8px;
+            right: 8px;
             background: rgba(255, 255, 255, 0.9);
             padding: 8px;
-            border-radius: 8px;
+            border-radius: 4px;
             text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-            grid-column: 1 / -1;
-            grid-row: 3;
-            font-size: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            z-index: 10;
+            font-size: 10px;
         }
 
         .gesture-info {
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 4px;
         }
 
         .gesture-status {
@@ -213,19 +215,22 @@
 
         .landmark-point {
             position: absolute;
-            width: 8px;
-            height: 8px;
+            width: 10px;
+            height: 10px;
             background: #ff0000;
             border-radius: 50%;
-            border: 2px solid #fff;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
+            border: 3px solid #fff;
+            box-shadow: 0 0 10px rgba(0,0,0,0.8);
             transform: translate(-50%, -50%);
+            z-index: 5;
         }
 
         .landmark-point.index-tip {
             background: #00ff00;
-            width: 12px;
-            height: 12px;
+            width: 16px;
+            height: 16px;
+            border: 4px solid #fff;
+            box-shadow: 0 0 15px rgba(0,255,0,0.8);
         }
 
         .landmark-point.thumb-tip {
@@ -237,6 +242,34 @@
             width: 10px;
             height: 10px;
         }
+
+        /* 左右手区分样式 */
+        .landmark-point.left-hand {
+            border: 2px solid #ff0000;
+            box-shadow: 0 0 8px rgba(255, 0, 0, 0.8);
+        }
+
+        .landmark-point.right-hand {
+            border: 2px solid #0000ff;
+            box-shadow: 0 0 8px rgba(0, 0, 255, 0.8);
+        }
+
+        .landmark-point.left-hand.index-tip {
+            background: #ff4444;
+            width: 18px;
+            height: 18px;
+            border: 4px solid #fff;
+            box-shadow: 0 0 20px rgba(255,68,68,0.8);
+        }
+
+        .landmark-point.right-hand.index-tip {
+            background: #4444ff;
+            width: 18px;
+            height: 18px;
+            border: 4px solid #fff;
+            box-shadow: 0 0 20px rgba(68,68,255,0.8);
+        }
+
 
         /* AR效果和虚拟画笔样式 */
         .ar-brush {
@@ -296,16 +329,16 @@
         }
 
         .theme-btn {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            border: 3px solid #fff;
+            width: 25px;
+            height: 25px;
+            border-radius: 3px;
+            border: 1px solid #fff;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
 
         .theme-btn:hover {
-            transform: scale(1.1);
+            transform: scale(1.05);
         }
 
         .theme-btn.active {
@@ -317,14 +350,15 @@
         .advanced-controls {
             background: rgba(255, 255, 255, 0.95);
             padding: 8px;
-            border-radius: 8px;
+            border-radius: 4px;
             display: none;
             position: absolute;
-            top: 10px;
-            right: 10px;
-            width: 300px;
+            top: 60px;
+            right: 8px;
+            width: 250px;
             z-index: 1000;
-            font-size: 11px;
+            font-size: 9px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
         }
 
         .advanced-controls.show {
@@ -339,19 +373,18 @@
         }
 
         .mode-btn {
-            padding: 4px 8px;
+            padding: 3px 6px;
             border: none;
-            border-radius: 10px;
+            border-radius: 2px;
             background: #667eea;
             color: white;
             cursor: pointer;
-            font-size: 10px;
-            transition: all 0.3s ease;
+            font-size: 8px;
+            transition: all 0.2s ease;
         }
 
         .mode-btn.active {
             background: #5a6fd8;
-            transform: scale(1.05);
         }
 
         /* 音效控制 */
@@ -513,19 +546,18 @@
         }
 
         .learning-btn {
-            padding: 8px 12px;
+            padding: 4px 8px;
             border: none;
-            border-radius: 15px;
+            border-radius: 2px;
             background: #667eea;
             color: white;
             cursor: pointer;
-            font-size: 11px;
-            transition: all 0.3s ease;
+            font-size: 8px;
+            transition: all 0.2s ease;
         }
 
         .learning-btn.active {
             background: #5a6fd8;
-            transform: scale(1.05);
         }
 
         .learning-content {
@@ -959,10 +991,15 @@
         </div>
     </div>
     
+
     <div class="status">
         <div class="gesture-info">
             <span>手势状态:</span>
             <span class="gesture-status" id="gestureStatus">等待手势...</span>
+        </div>
+        <div class="gesture-info">
+            <span>双手状态:</span>
+            <span id="handsStatus">左手: 等待 | 右手: 等待</span>
         </div>
         <div class="gesture-info">
             <span>画笔模式:</span>
@@ -1040,6 +1077,25 @@
         let speedHistory = [];
         let pressureHistory = [];
         let arBrush = null;
+        
+        
+        // 双手绘画状态
+        let handsState = {
+            left: {
+                isDrawing: false,
+                lastX: 0,
+                lastY: 0,
+                color: '#FF0000', // 左手红色
+                brushSize: 5
+            },
+            right: {
+                isDrawing: false,
+                lastX: 0,
+                lastY: 0,
+                color: '#0000FF', // 右手蓝色
+                brushSize: 5
+            }
+        };
         let particles = [];
 
         // 动态画笔和学习功能变量
@@ -1079,7 +1135,7 @@
                 });
 
                 hands.setOptions({
-                    maxNumHands: 1,
+                    maxNumHands: 2,  // 支持双手检测
                     modelComplexity: 1,
                     minDetectionConfidence: 0.5,
                     minTrackingConfidence: 0.5
@@ -1116,23 +1172,45 @@
             handLandmarks.innerHTML = '';
             
             if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-                const landmarks = results.multiHandLandmarks[0];
-                const gesture = detectGesture(landmarks);
-                handleGesture(gesture, landmarks);
-                drawHandLandmarks(landmarks);
+                console.log(`检测到 ${results.multiHandLandmarks.length} 只手`);
+                updateHandsDetectionStatus(results.multiHandLandmarks.length);
+                
+                // 处理每只手
+                results.multiHandLandmarks.forEach((landmarks, handIndex) => {
+                    const gesture = detectGesture(landmarks);
+                    // 根据手腕位置判断左右手（手腕在屏幕左侧为左手，右侧为右手）
+                    const wrist = landmarks[0];
+                    const handType = wrist.x < 0.5 ? 'left' : 'right';
+                    
+                    console.log(`手 ${handIndex}: 手腕位置 x=${wrist.x.toFixed(2)}, 判断为 ${handType}手, 手势=${gesture}`);
+                    
+                    handleGesture(gesture, landmarks, handType);
+                    drawHandLandmarks(landmarks, handType);
+                });
                 updateTrackingStatus();
                 updateTrackingDisplay();
             } else {
+                // 停止所有手的绘画
+                handsState.left.isDrawing = false;
+                handsState.right.isDrawing = false;
+                updateHandsDetectionStatus(0);
                 updateGestureStatus('等待手势...');
                 updateTrackingDisplay();
             }
         }
 
         // 绘制手部关键点
-        function drawHandLandmarks(landmarks) {
+        function drawHandLandmarks(landmarks, handType) {
             landmarks.forEach((landmark, index) => {
                 const point = document.createElement('div');
                 point.className = 'landmark-point';
+                
+                // 根据手部类型添加不同的样式
+                if (handType === 'left') {
+                    point.classList.add('left-hand');
+                } else {
+                    point.classList.add('right-hand');
+                }
                 
                 // 特殊标记重要关键点
                 if (index === 8) { // 食指尖
@@ -1144,7 +1222,7 @@
                 }
                 
                 // 计算在视频中的位置
-                const x = landmark.x * 100;
+                const x = (1 - landmark.x) * 100;  // 翻转X坐标以匹配翻转的视频
                 const y = landmark.y * 100;
                 
                 point.style.left = x + '%';
@@ -1162,7 +1240,7 @@
             if (currentAR === 'none') return;
 
             const indexTip = landmarks[8];
-            const x = (1 - indexTip.x) * 800;
+            const x = (1 - indexTip.x) * 800;  // 翻转X坐标以匹配翻转的视频
             const y = indexTip.y * 500;
 
             // 虚拟画笔效果
@@ -1231,44 +1309,56 @@
             return 'unknown';
         }
 
+
         // 处理手势
-        function handleGesture(gesture, landmarks) {
+        function handleGesture(gesture, landmarks, handType) {
             const index = landmarks[8];
-            const x = (1 - index.x) * canvas.width;
+            const x = (1 - index.x) * canvas.width;  // 翻转X坐标以匹配翻转的视频
             const y = index.y * canvas.height;
 
             switch (gesture) {
                 case 'point':
-                    if (!isDrawing) {
-                        startDrawing(x, y);
+                    if (!handsState[handType].isDrawing) {
+                        startDrawing(x, y, handType);
                     } else {
-                        continueDrawing(x, y);
+                        continueDrawing(x, y, handType);
                     }
-                    updateGestureStatus('画图中...', 'drawing');
+                    updateGestureStatus(`双手画图中... (${handType === 'left' ? '左手' : '右手'}活跃)`, 'drawing');
                     break;
                 case 'open':
-                    stopDrawing();
-                    updateGestureStatus('停止操作', 'waiting');
+                    stopDrawing(handType);
+                    updateGestureStatus(`${handType === 'left' ? '左手' : '右手'}停止操作`, 'waiting');
                     break;
                 default:
+                    stopDrawing(handType);
                     updateGestureStatus('等待手势...', 'waiting');
                     break;
             }
         }
 
         // 开始画图
-        function startDrawing(x, y) {
-            isDrawing = true;
-            lastX = x;
-            lastY = y;
-            resetBrushState();
+        function startDrawing(x, y, handType) {
+            handsState[handType].isDrawing = true;
+            handsState[handType].lastX = x;
+            handsState[handType].lastY = y;
+            
+            // 设置画笔颜色和大小
+            ctx.strokeStyle = handsState[handType].color;
+            ctx.lineWidth = handsState[handType].brushSize;
+            ctx.globalAlpha = 1;
+            
+            // 开始新的路径
+            ctx.beginPath();
+            
+            // 更新双手状态
+            updateHandsStatus();
         }
 
         // 继续画图
-        function continueDrawing(x, y) {
-            if (isDrawing) {
+        function continueDrawing(x, y, handType) {
+            if (handsState[handType].isDrawing) {
                 // 计算移动速度
-                const speed = Math.sqrt((x - lastX) ** 2 + (y - lastY) ** 2);
+                const speed = Math.sqrt((x - handsState[handType].lastX) ** 2 + (y - handsState[handType].lastY) ** 2);
                 speedHistory.push(speed);
                 if (speedHistory.length > 10) speedHistory.shift();
 
@@ -1277,14 +1367,19 @@
                 pressureHistory.push(pressure);
                 if (pressureHistory.length > 10) pressureHistory.shift();
 
-                ctx.beginPath();
-                ctx.moveTo(lastX, lastY);
-                ctx.lineTo(x, y);
-
-                // 根据模式设置画笔属性
-                setBrushProperties(speed, pressure);
+                // 设置画笔属性
+                ctx.strokeStyle = handsState[handType].color;
+                ctx.lineWidth = handsState[handType].brushSize;
+                ctx.globalAlpha = 1;
                 
-                ctx.stroke();
+                // 如果是第一次绘制，移动到起始点
+                if (handsState[handType].lastX === x && handsState[handType].lastY === y) {
+                    ctx.moveTo(x, y);
+                } else {
+                    // 绘制从上一个点到当前点的线条
+                    ctx.lineTo(x, y);
+                    ctx.stroke();
+                }
                 
                 // 播放音效
                 if (audioEnabled) {
@@ -1299,8 +1394,8 @@
                     checkRehabProgress();
                 }
                 
-                lastX = x;
-                lastY = y;
+                handsState[handType].lastX = x;
+                handsState[handType].lastY = y;
             }
         }
 
@@ -1418,9 +1513,15 @@
         }
 
         // 停止画图
-        function stopDrawing() {
-            isDrawing = false;
+        function stopDrawing(handType) {
+            handsState[handType].isDrawing = false;
+            // 更新双手状态
+            updateHandsStatus();
         }
+
+
+
+
 
 
         // 更新手势状态显示
@@ -1431,6 +1532,30 @@
             
             // 更新手势状态显示
             updateGestureOverlay(text, className);
+        }
+
+        // 更新双手状态显示
+        function updateHandsStatus() {
+            const handsStatus = document.getElementById('handsStatus');
+            if (handsStatus) {
+                const leftStatus = handsState.left.isDrawing ? '画图中' : '等待';
+                const rightStatus = handsState.right.isDrawing ? '画图中' : '等待';
+                handsStatus.textContent = `左手: ${leftStatus} | 右手: ${rightStatus}`;
+            }
+        }
+
+        // 更新双手检测状态
+        function updateHandsDetectionStatus(detectedHands) {
+            const handsStatus = document.getElementById('handsStatus');
+            if (handsStatus) {
+                if (detectedHands === 0) {
+                    handsStatus.textContent = '未检测到双手';
+                } else if (detectedHands === 1) {
+                    handsStatus.textContent = '检测到1只手';
+                } else {
+                    handsStatus.textContent = `检测到${detectedHands}只手`;
+                }
+            }
         }
 
         // 更新手势状态覆盖层
