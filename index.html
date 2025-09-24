@@ -460,32 +460,6 @@
             height: 10px;
         }
 
-        /* 左右手区分样式 */
-        .landmark-point.left-hand {
-            border: 2px solid #ff0000;
-            box-shadow: 0 0 8px rgba(255, 0, 0, 0.8);
-        }
-
-        .landmark-point.right-hand {
-            border: 2px solid #0000ff;
-            box-shadow: 0 0 8px rgba(0, 0, 255, 0.8);
-        }
-
-        .landmark-point.left-hand.index-tip {
-            background: #ff4444;
-            width: 18px;
-            height: 18px;
-            border: 4px solid #fff;
-            box-shadow: 0 0 20px rgba(255,68,68,0.8);
-        }
-
-        .landmark-point.right-hand.index-tip {
-            background: #4444ff;
-            width: 18px;
-            height: 18px;
-            border: 4px solid #fff;
-            box-shadow: 0 0 20px rgba(68,68,255,0.8);
-        }
         
         /* 手部关键点连线样式 */
         .landmark-line {
@@ -1471,7 +1445,7 @@
                 });
 
                 hands.setOptions({
-                    maxNumHands: 2,  // 支持双手检测
+                    maxNumHands: 1,  // 只检测单手
                     modelComplexity: 1,
                     minDetectionConfidence: 0.5,
                     minTrackingConfidence: 0.5
@@ -1532,18 +1506,14 @@
                 console.log(`检测到 ${results.multiHandLandmarks.length} 只手`);
                 updateHandsDetectionStatus(results.multiHandLandmarks.length);
                 
-                // 处理每只手
-                results.multiHandLandmarks.forEach((landmarks, handIndex) => {
-                    const gesture = detectGesture(landmarks);
-                    // 根据手腕位置判断左右手（手腕在屏幕左侧为左手，右侧为右手）
-                    const wrist = landmarks[0];
-                    const handType = wrist.x < 0.5 ? 'left' : 'right';
-                    
-                    console.log(`手 ${handIndex}: 手腕位置 x=${wrist.x.toFixed(2)}, 判断为 ${handType}手, 手势=${gesture}`);
-                    
-                    handleGesture(gesture, landmarks);
-                    drawHandLandmarks(landmarks, handType);
-                });
+                // 只处理第一只手
+                const landmarks = results.multiHandLandmarks[0];
+                const gesture = detectGesture(landmarks);
+                
+                console.log(`检测到手势: ${gesture}`);
+                
+                handleGesture(gesture, landmarks);
+                drawHandLandmarks(landmarks, 'single');
                 updateTrackingStatus();
                 updateTrackingDisplay();
             } else {
@@ -1661,12 +1631,7 @@
                 const point = document.createElement('div');
                 point.className = 'landmark-point';
                 
-                // 根据手部类型添加不同的样式
-                if (handType === 'left') {
-                    point.classList.add('left-hand');
-                } else {
-                    point.classList.add('right-hand');
-                }
+                // 统一手部样式，不区分左右手
                 
                 // 特殊标记重要关键点
                 if (index === 8) { // 食指尖
@@ -2292,7 +2257,7 @@
                 if (detectedHands === 0) {
                     handsStatus.textContent = '未检测到手部';
                 } else {
-                    handsStatus.textContent = '检测到手部';
+                    handsStatus.textContent = '检测到单手';
                 }
             }
         }
