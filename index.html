@@ -36,15 +36,13 @@
         }
 
         #canvas {
-            background: transparent;
-            border: none;
             cursor: crosshair;
             width: 100%;
             height: 100%;
             position: absolute;
             top: 0;
             left: 0;
-            z-index: 2;
+            z-index: 10; /* 提高层级确保在最上层 */
         }
 
         .video-container {
@@ -1984,6 +1982,10 @@
 
         // 开始画图
         function startDrawing(x, y) {
+            // 获取当前的画布上下文
+            const canvas = document.getElementById('canvas');
+            const ctx = canvas.getContext('2d');
+            
             drawingState.isDrawing = true;
             drawingState.lastX = x;
             drawingState.lastY = y;
@@ -2005,6 +2007,8 @@
             ctx.beginPath();
             ctx.moveTo(x, y);
             
+            console.log('开始绘画，坐标:', x, y, '画布尺寸:', canvas.width, 'x', canvas.height);
+            
             // 更新绘画状态
             updateDrawingStatus();
         }
@@ -2012,6 +2016,10 @@
         // 继续画图
         function continueDrawing(x, y) {
             if (drawingState.isDrawing) {
+                // 获取当前的画布上下文
+                const canvas = document.getElementById('canvas');
+                const ctx = canvas.getContext('2d');
+                
                 // 计算移动速度
                 const speed = Math.sqrt((x - drawingState.lastX) ** 2 + (y - drawingState.lastY) ** 2);
                 speedHistory.push(speed);
@@ -2188,6 +2196,34 @@
             drawingState.points = [];
             // 更新绘画状态
             updateDrawingStatus();
+        }
+
+        // 清除画布函数
+        function clearCanvas() {
+            const canvas = document.getElementById('canvas');
+            
+            if (!canvas) {
+                console.error('画布元素未找到');
+                return;
+            }
+            
+            const ctx = canvas.getContext('2d');
+            
+            // 清除画布内容
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // 停止当前绘画状态
+            if (drawingState.isDrawing) {
+                drawingState.isDrawing = false;
+                drawingState.points = [];
+                updateDrawingStatus();
+            }
+            
+            // 重置绘画状态
+            drawingState.lastX = 0;
+            drawingState.lastY = 0;
+            
+            console.log('画布已清除');
         }
 
 
@@ -2518,99 +2554,24 @@
                 });
             });
 
-            // AR效果
-            document.querySelectorAll('.mode-btn[data-ar]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.mode-btn[data-ar]').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentAR = btn.dataset.ar;
-                    updateARStatus();
-                });
-            });
-
-            // 音效控制
-            document.getElementById('audioToggle').addEventListener('click', () => {
-                audioEnabled = !audioEnabled;
-                document.getElementById('audioToggle').classList.toggle('active', audioEnabled);
-                updateAudioStatus();
-            });
-
-            document.getElementById('volumeSlider').addEventListener('input', (e) => {
-                volume = e.target.value / 100;
-                updateAudioStatus();
-            });
-
-            // 游戏模式
-            document.querySelectorAll('.mode-btn[data-game]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const game = btn.dataset.game;
-                    startGame(game);
-                });
-            });
-
-            // 高级功能按钮
-            document.getElementById('advancedBtn').addEventListener('click', () => {
-                const advancedControls = document.getElementById('advancedControls');
-                advancedControls.classList.toggle('show');
-            });
-
-            // 游戏模式按钮
-            document.getElementById('gameBtn').addEventListener('click', () => {
-                const gameMode = document.getElementById('gameMode');
-                gameMode.classList.toggle('show');
-            });
-
-            // 学习模式按钮
-            document.getElementById('learningBtn').addEventListener('click', () => {
-                const learningMode = document.getElementById('learningMode');
-                learningMode.classList.toggle('show');
-                if (learningMode.classList.contains('show')) {
-                    startLearningMode();
-                }
-            });
-
-            // 康复训练按钮
-            document.getElementById('rehabBtn').addEventListener('click', () => {
-                const rehabMode = document.getElementById('rehabMode');
-                rehabMode.classList.toggle('show');
-                if (rehabMode.classList.contains('show')) {
-                    startRehabMode();
-                }
-            });
-
-            // 动态画笔选择
-            document.querySelectorAll('.mode-btn[data-brush]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.mode-btn[data-brush]').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    currentBrush = btn.dataset.brush;
-                });
-            });
-
-            // 学习类别选择
-            document.querySelectorAll('.learning-btn[data-category]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.learning-btn[data-category]').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    learningCategory = btn.dataset.category;
-                    currentLearningIndex = 0;
-                    updateLearningDisplay();
-                });
-            });
-
-            // 康复训练类型选择
-            document.querySelectorAll('.learning-btn[data-rehab]').forEach(btn => {
-                btn.addEventListener('click', () => {
-                    document.querySelectorAll('.learning-btn[data-rehab]').forEach(b => b.classList.remove('active'));
-                    btn.classList.add('active');
-                    rehabType = btn.dataset.rehab;
-                    updateRehabDisplay();
-                });
-            });
-
             // 清除画布
             document.getElementById('clearBtn').addEventListener('click', () => {
-                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                console.log(1);
+                
+                // 添加视觉反馈
+                const btn = document.getElementById('clearBtn');
+                const originalText = btn.textContent;
+                btn.textContent = '清除中...';
+                btn.disabled = true;
+                
+                // 执行清除
+                clearCanvas();
+                
+                // 恢复按钮状态
+                setTimeout(() => {
+                    btn.textContent = originalText;
+                    btn.disabled = false;
+                }, 500);
             });
 
             // 保存图片
