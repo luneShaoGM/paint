@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>手部追踪画图</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MediaPipe Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <style>
+        body {
+            background-color: #000;
+            color: white;
+            overflow: hidden;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            touch-action: none; /* Prevent scrolling on mobile */
+        }
+        
+        /* Canvas & Video Positioning */
+        .canvas-wrapper {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+        
+        #input_video {
+            display: none; /* Hide raw video, we draw it on canvas */
+        }
+        
+        #output_canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transform: scaleX(-1); /* Mirror effect */
+        }
+        
+        #drawing_canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 10;
+            transform: scaleX(-1); /* Mirror effect to match output */
+        }
+
+        /* UI Overlay Layer */
+        .ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 20;
+            pointer-events: none; /* Let clicks pass through to canvas if needed, but we have specific pointer-events: auto on buttons */
+        }
+
+        /* Top Left Info Panel */
+        .info-panel {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            pointer-events: auto;
+        }
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: 200px;
+            border-bottom: 1px solid rgba(255,255,255,0.2);
+            padding-bottom: 4px;
+        }
+        .info-label {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+        }
+        .info-value {
+            font-size: 16px;
+            font-weight: 600;
+        }
+        .text-orange { color: #FFA500; }
+        .text-green { color: #4ADE80; }
+
+        /* Top Right Status Circle */
+        .status-circle {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 80px;
+            height: 80px;
+            background: #F59E0B;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            pointer-events: auto;
+            transition: transform 0.2s;
+        }
+
+        /* Bottom Right Controls Card */
+        .controls-card {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            width: 120px;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 12px;
+            padding: 12px;
+            pointer-events: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            color: #333;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #1f2937;
+        }
+
+        /* Patterns Grid */
+        .pattern-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+        .pattern-btn {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            background: #e5e7eb;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s;
+        }
+        .pattern-btn.active {
+            border-color: #F59E0B; /* Yellow ring */
+            background: #fff;
+            box-shadow: 0 0 0 2px #F59E0B;
+        }
+        .pattern-btn.btn-none {
+            background: #6366f1; /* Purple for None */
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+        /* Thickness Row */
+        .size-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 4px;
+        }
+        .size-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #4b5563;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .size-btn.active {
+            background: #FCD34D;
+            color: black;
+            border: 2px solid #F59E0B;
+        }
+
+        /* Color Grid */
+        .color-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 6px;
+        }
+        .color-btn {
+            aspect-ratio: 1;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 2px solid transparent;
+        }
+        .color-btn.active {
+            border-color: #000;
+            transform: scale(0.9);
+        }
+
+        /* Action Buttons */
+        .action-btn {
+            width: 100%;
+            background: #6366f1;
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 4px;
+            transition: background 0.2s;
+        }
+        .action-btn:active {
+            background: #4f46e5;
+        }
+
+        /* Loading */
+        #loading {
+            position: fixed;
+            top: 0; 
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Loading Screen -->
+    <div id="loading">
+        <div class="animate-spin rounded-full h-12 w-12 border-b-2 border-white mb-4"></div>
+        <p>正在启动摄像头和AI模型...</p>
+        <p class="text-xs text-gray-400 mt-2">首次加载可能需要几秒钟</p>
+    </div>
+
+    <!-- Canvas Layer -->
+    <div class="canvas-wrapper">
+        <video id="input_video" playsinline></video>
+        <canvas id="output_canvas"></canvas>
+        <canvas id="drawing_canvas"></canvas>
+    </div>
+
+    <!-- UI Overlay -->
+    <div class="ui-layer">
+        
+        <!-- Top Left Info -->
+        <div class="info-panel">
+            <div class="info-row">
+                <span class="info-label">手势状态:</span>
+                <span id="status_gesture" class="info-value text-orange">等待中</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">画笔模式:</span>
+                <span id="status_mode" class="info-value text-green">普通</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">画笔大小:</span>
+                <span id="status_size" class="info-value text-green">5px</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">手部追踪:</span>
+                <span id="status_tracking" class="info-value text-green">已启动</span>
+            </div>
+        </div>
+
+        <!-- Top Right Status Icon -->
+        <div id="gesture_icon" class="status-circle">
+            ✋
+        </div>
+
+        <!-- Bottom Right Controls -->
+        <div class="controls-card">
+            <!-- Patterns -->
+            <div>
+                <div class="section-title">图案</div>
+                <div class="pattern-grid">
+                    <div class="pattern-btn btn-none active" onclick="setPattern('none')">无</div>
+                    <div class="pattern-btn" onclick="setPattern('apple')">🍎</div>
+                    <div class="pattern-btn" onclick="setPattern('car')">🚙</div>
+                    <div class="pattern-btn" onclick="setPattern('girl')">👧</div>
+                    <div class="pattern-btn" onclick="setPattern('rabbit')">🐰</div>
+                    <!-- Placeholder to fill grid -->
+                    <div class="pattern-btn" style="visibility:hidden"></div> 
+                </div>
+            </div>
+
+            <!-- Thickness -->
+            <div>
+                <div class="section-title">粗细</div>
+                <div class="size-row">
+                    <div class="size-btn" onclick="setSize(2, 'S', this)">S</div>
+                    <div class="size-btn active" onclick="setSize(5, 'M', this)">M</div>
+                    <div class="size-btn" onclick="setSize(12, 'L', this)">L</div>
+                </div>
+            </div>
+
+            <!-- Colors -->
+            <div>
+                <div class="section-title">颜色</div>
+                <div class="color-row">
+                    <div class="color-btn bg-red-500" onclick="setColor('#ef4444', this)"></div>
+                    <div class="color-btn bg-teal-400" onclick="setColor('#2dd4bf', this)"></div>
+                    <div class="color-btn bg-blue-500" onclick="setColor('#3b82f6', this)"></div>
+                    <div class="color-btn bg-green-400" onclick="setColor('#4ade80', this)"></div>
+                    <div class="color-btn bg-yellow-400 active" onclick="setColor('#facc15', this)"></div>
+                    <div class="color-btn bg-pink-400" onclick="setColor('#f472b6', this)"></div>
+                </div>
+            </div>
+
+            <!-- Actions -->
+            <div>
+                <div class="section-title">操作</div>
+                <button class="action-btn" onclick="clearCanvas()">清除</button>
+                <button class="action-btn" onclick="saveCanvas()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- Configuration & State ---
+        const CONFIG = {
+            width: window.innerWidth,
+            height: window.innerHeight,
+        };
+        
+        const state = {
+            color: '#facc15', // Default yellow from UI
+            size: 5,
+            sizeLabel: 'M',
+            pattern: 'none', // none, apple, car, girl, rabbit
+            isDrawing: false,
+            lastX: 0,
+            lastY: 0,
+            gesture: 'STOP' // STOP, DRAW, ERASE
+        };
+
+        // --- DOM Elements ---
+        const videoElement = document.getElementById('input_video');
+        const outputCanvas = document.getElementById('output_canvas');
+        const outputCtx = outputCanvas.getContext('2d');
+        const drawingCanvas = document.getElementById('drawing_canvas');
+        const drawingCtx = drawingCanvas.getContext('2d');
+        
+        // Status Elements
+        const elStatusGesture = document.getElementById('status_gesture');
+        const elStatusMode = document.getElementById('status_mode');
+        const elStatusSize = document.getElementById('status_size');
+        const elGestureIcon = document.getElementById('gesture_icon');
+
+        // --- Initialization ---
+        function resizeCanvas() {
+            CONFIG.width = window.innerWidth;
+            CONFIG.height = window.innerHeight;
+            outputCanvas.width = CONFIG.width;
+            outputCanvas.height = CONFIG.height;
+            drawingCanvas.width = CONFIG.width;
+            drawingCanvas.height = CONFIG.height;
+        }
+        window.addEventListener('resize', resizeCanvas);
+        resizeCanvas();
+
+        // --- UI Functions ---
+        function setPattern(p) {
+            state.pattern = p;
+            document.querySelectorAll('.pattern-btn').forEach(b => b.classList.remove('active'));
+            // Find the button that was clicked - simple hack finding by text content or mapping
+            const map = {'none': '无', 'apple': '🍎', 'car': '🚙', 'girl': '👧', 'rabbit': '🐰'};
+            const text = map[p];
+            const btns = Array.from(document.querySelectorAll('.pattern-btn'));
+            const target = btns.find(b => b.textContent.trim() === text);
+            if(target) target.classList.add('active');
+
+            if (p === 'none') {
+                elStatusMode.textContent = '普通';
+            } else {
+                elStatusMode.textContent = '图案';
+            }
+        }
+
+        function setSize(s, label, el) {
+            state.size = s;
+            state.sizeLabel = label;
+            document.querySelectorAll('.size-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+            elStatusSize.textContent = s + 'px';
+        }
+
+        function setColor(c, el) {
+            state.color = c;
+            document.querySelectorAll('.color-btn').forEach(b => b.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function clearCanvas() {
+            drawingCtx.clearRect(0, 0, CONFIG.width, CONFIG.height);
+        }
+
+        function saveCanvas() {
+            const link = document.createElement('a');
+            link.download = 'hand-drawing.png';
+            
+            // Merge canvases
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = CONFIG.width;
+            tempCanvas.height = CONFIG.height;
+            const tCtx = tempCanvas.getContext('2d');
+            
+            // Fill black background
+            tCtx.fillStyle = '#000000';
+            tCtx.fillRect(0, 0, CONFIG.width, CONFIG.height);
+            
+            // Draw original video (need to capture current frame or just skip video for cleaner art)
+            // Let's just save the art on black
+            tCtx.drawImage(drawingCanvas, 0, 0); // Drawing canvas is mirrored via CSS, but data is normal? 
+            // Actually, because we draw on drawingCanvas using mirrored coordinates (see below logic), the raw data in drawingCanvas is already flipped relative to the camera source?
+            // No, usually we flip the CANVAS element with CSS. The coordinates we draw are calculated.
+            // If CSS transform scaleX(-1) is used, visual is flipped.
+            // If we draw at (10, 10), it appears at top right.
+            // Let's just save the drawingCanvas directly.
+            
+            link.href = drawingCanvas.toDataURL();
+            link.click();
+        }
+
+        // --- Logic: Gesture Detection ---
+        function determineMode(landmarks) {
+            // Index finger: 8
+            // Middle: 12, Ring: 16, Pinky: 20
+            // MCP joints: 5, 9, 13, 17
+            
+            const isFingerUp = (tipIdx, pipIdx) => landmarks[tipIdx].y < landmarks[pipIdx].y;
+            // Using PIP (second joint from bottom) for stricter straightness check or MCP
+            
+            const indexUp = landmarks[8].y < landmarks[6].y; // Index tip above PIP
+            const middleUp = landmarks[12].y < landmarks[10].y;
+            const ringUp = landmarks[16].y < landmarks[14].y;
+            const pinkyUp = landmarks[20].y < landmarks[18].y;
+
+            // DRAW: Only Index up
+            if (indexUp && !middleUp && !ringUp && !pinkyUp) return 'DRAW';
+            
+            // ERASE: All fingers down (Fist)
+            if (!indexUp && !middleUp && !ringUp && !pinkyUp) return 'ERASE';
+            
+            // STOP: All fingers up (Palm) or anything else
+            if (indexUp && middleUp && ringUp && pinkyUp) return 'STOP';
+            
+            return 'STOP';
+        }
+
+        // --- MediaPipe & Drawing Loop ---
+        const hands = new Hands({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`;
+        }});
+
+        hands.setOptions({
+            maxNumHands: 1,
+            modelComplexity: 1,
+            minDetectionConfidence: 0.5,
+            minTrackingConfidence: 0.5
+        });
+
+        hands.onResults(onResults);
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                await hands.send({image: videoElement});
+            },
+            width: 1280,
+            height: 720
+        });
+
+        camera.start().then(() => {
+            document.getElementById('loading').style.display = 'none';
+        });
+
+        function onResults(results) {
+            // Draw Video Background
+            outputCtx.save();
+            outputCtx.clearRect(0, 0, outputCanvas.width, outputCanvas.height);
+            outputCtx.drawImage(results.image, 0, 0, outputCanvas.width, outputCanvas.height);
+            
+            // Draw Hand Landmarks
+            if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+                const landmarks = results.multiHandLandmarks[0];
+                drawConnectors(outputCtx, landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 2});
+                drawLandmarks(outputCtx, landmarks, {color: '#FF0000', lineWidth: 1, radius: 2});
+
+                // Logic
+                const mode = determineMode(landmarks);
+                state.gesture = mode;
+
+                // Update UI Status
+                if (mode === 'DRAW') {
+                    elStatusGesture.textContent = '画画中';
+                    elStatusGesture.className = 'info-value text-green';
+                    elGestureIcon.textContent = '☝️';
+                    elGestureIcon.style.transform = 'scale(1.1)';
+                } else if (mode === 'ERASE') {
+                    elStatusGesture.textContent = '擦除中';
+                    elStatusGesture.className = 'info-value text-red-500';
+                    elGestureIcon.textContent = '✊';
+                    elGestureIcon.style.transform = 'scale(1.1)';
+                } else {
+                    elStatusGesture.textContent = '等待中';
+                    elStatusGesture.className = 'info-value text-orange';
+                    elGestureIcon.textContent = '✋';
+                    elGestureIcon.style.transform = 'scale(1)';
+                }
+
+                // Drawing Coordinates
+                // Index finger tip is 8
+                const x = landmarks[8].x * CONFIG.width;
+                const y = landmarks[8].y * CONFIG.height;
+
+                if (mode === 'DRAW' || mode === 'ERASE') {
+                    if (state.isDrawing) {
+                        // Drawing Logic
+                        if (mode === 'ERASE') {
+                            drawingCtx.globalCompositeOperation = 'destination-out';
+                            drawingCtx.beginPath();
+                            drawingCtx.arc(x, y, 20, 0, 2 * Math.PI);
+                            drawingCtx.fill();
+                        } else {
+                            // DRAW MODE
+                            drawingCtx.globalCompositeOperation = 'source-over';
+                            
+                            if (state.pattern === 'none') {
+                                // Normal Line Drawing
+                                drawingCtx.beginPath();
+                                drawingCtx.moveTo(state.lastX, state.lastY);
+                                drawingCtx.lineTo(x, y);
+                                drawingCtx.strokeStyle = state.color;
+                                drawingCtx.lineWidth = state.size;
+                                drawingCtx.lineCap = 'round';
+                                drawingCtx.lineJoin = 'round';
+                                drawingCtx.stroke();
+                            } else {
+                                // Pattern Drawing (Stamps spaced out)
+                                // Calculate distance to avoid too many stamps
+                                const dist = Math.hypot(x - state.lastX, y - state.lastY);
+                                if (dist > 20) {
+                                    const emojiMap = {'apple': '🍎', 'car': '🚙', 'girl': '👧', 'rabbit': '🐰'};
+                                    drawingCtx.font = `${state.size * 3 + 10}px Arial`;
+                                    drawingCtx.textAlign = 'center';
+                                    drawingCtx.textBaseline = 'middle';
+                                    drawingCtx.fillText(emojiMap[state.pattern], x, y);
+                                    // Reset to force next stamp check
+                                    state.lastX = x;
+                                    state.lastY = y;
+                                    // Hack: Return early to avoid updating lastX/Y at bottom for continuous lines
+                                    // actually we want to update it.
+                                }
+                            }
+                        }
+                    }
+                    state.isDrawing = true;
+                } else {
+                    state.isDrawing = false;
+                }
+
+                if (state.pattern === 'none' || state.gesture === 'ERASE') {
+                     // For lines, we need continuous updates
+                     state.lastX = x;
+                     state.lastY = y;
+                } else {
+                     // For patterns, we updated inside the distance check conditionally, 
+                     // but if we weren't drawing, we need to sync position
+                     if (!state.isDrawing) {
+                         state.lastX = x;
+                         state.lastY = y;
+                     }
+                }
+
+            } else {
+                state.isDrawing = false;
+                elStatusGesture.textContent = '未检测';
+                elStatusGesture.className = 'info-value text-gray-500';
+            }
+            outputCtx.restore();
+        }
+    </script>
+</body>
+</html>
